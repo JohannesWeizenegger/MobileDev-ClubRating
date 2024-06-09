@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "734874580425",
+    "project_id": "cannaclubrating",
+    "storage_bucket": "cannaclubrating.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:734874580425:android:caf3420360fde62ecb2418",
+        "android_client_info": {
+          "package_name": "com.example.canna_club_rating"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnLS4q7ij271sBTWKQUNkJORT1nRPsRPw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
