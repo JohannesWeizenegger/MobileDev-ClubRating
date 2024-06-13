@@ -12,7 +12,12 @@
           "package_name": "com.example.canna_club_rating"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "734874580425-gagj7c3mh773mkl76uii5gm9k0imivh8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAnLS4q7ij271sBTWKQUNkJORT1nRPsRPw"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "734874580425-gagj7c3mh773mkl76uii5gm9k0imivh8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "734874580425-5g52ohl2g6krgus7olma1riafu75c6kl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cannaClubRating"
+              }
+            }
+          ]
         }
       }
     }
