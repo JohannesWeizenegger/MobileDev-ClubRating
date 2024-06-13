@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sign_in_button/sign_in_button.dart';
+import 'role_selection_page.dart'; // Importiere den neuen Screen
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,6 +21,14 @@ class _HomePageState extends State<HomePage> {
     _auth.authStateChanges().listen((event) {
       setState(() {
         _user = event;
+        if (_user != null) {
+          Future.microtask(() => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const RoleSelectionPage(),
+                ),
+              ));
+        }
       });
     });
   }
@@ -30,11 +39,11 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text("Google SignIn"),
       ),
-      body: _user != null ? _userInfo() : _googleSignInBotton(),
+      body: _user != null ? _userInfo() : _googleSignInButton(),
     );
   }
 
-  Widget _googleSignInBotton() {
+  Widget _googleSignInButton() {
     return Center(
         child: SizedBox(
       height: 50,
@@ -65,7 +74,12 @@ class _HomePageState extends State<HomePage> {
           MaterialButton(
               color: Colors.white,
               child: const Text("Sign Out"),
-              onPressed: _auth.signOut)
+              onPressed: () async {
+                await _auth.signOut();
+                setState(() {
+                  _user = null;
+                });
+              }),
         ],
       ),
     );
