@@ -56,10 +56,6 @@ class _ClubPageState extends State<ClubPage> {
                 },
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Adresse:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
               const SizedBox(height: 16),
               Row(
                 children: [
