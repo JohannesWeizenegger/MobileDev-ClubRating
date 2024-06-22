@@ -23,7 +23,7 @@ class RoleSelectionPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const CustomerPage()),
                 );
               },
-              child: const Text("Ich bin ein Kunde"),
+              child: const Text("Clubs finden und bewerten"),
             ),
             ElevatedButton(
               onPressed: () {
@@ -32,7 +32,7 @@ class RoleSelectionPage extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const ClubPage()),
                 );
               },
-              child: const Text("Ich bin ein Verkäufer"),
+              child: const Text("Eigenen Club registrieren"),
             ),
           ],
         ),
