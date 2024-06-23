@@ -146,7 +146,6 @@ class _CustomerPageState extends State<CustomerPage> {
                   itemBuilder: (context, index) {
                     final club = clubs[index];
                     final userRating = club['userRating'];
-                    final bool hasRated = userRating != null;
 
                     return ListTile(
                       title: Text(club['data']['name'] ?? 'N/A'),
@@ -180,7 +179,6 @@ class _CustomerPageState extends State<CustomerPage> {
                                   } else if (remainder > 0) {
                                     fillPercentage = remainder;
                                   }
-
                                   return Stack(
                                     children: [
                                       Icon(
