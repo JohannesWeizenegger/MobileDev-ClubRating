@@ -16,14 +16,12 @@ class _ClubPageState extends State<ClubPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _clubNameController = TextEditingController();
   final TextEditingController _clubStreetController = TextEditingController();
-  final TextEditingController _clubHouseNumberController =
-      TextEditingController();
+  final TextEditingController _clubHouseNumberController = TextEditingController();
   final TextEditingController _clubZipCodeController = TextEditingController();
   final TextEditingController _clubCityController = TextEditingController();
   final TextEditingController _ownerNameController = TextEditingController();
   final TextEditingController _ownerStreetController = TextEditingController();
-  final TextEditingController _ownerHouseNumberController =
-      TextEditingController();
+  final TextEditingController _ownerHouseNumberController = TextEditingController();
   final TextEditingController _ownerZipCodeController = TextEditingController();
   final TextEditingController _ownerCityController = TextEditingController();
   File? _selectedImage;
@@ -286,62 +284,70 @@ class _ClubPageState extends State<ClubPage> {
     final String ownerHouseNumber = _ownerHouseNumberController.text;
     final String ownerZipCode = _ownerZipCodeController.text;
     final String ownerCity = _ownerCityController.text;
-    final String uniqueFileName =
-        DateTime.now().millisecondsSinceEpoch.toString();
+    final String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
     final Reference referenceRoot = FirebaseStorage.instance.ref();
     final Reference referenceDirImages = referenceRoot.child('images');
-    final Reference referenceImageToUpload =
-        referenceDirImages.child(uniqueFileName);
+    final Reference referenceImageToUpload = referenceDirImages.child(uniqueFileName);
 
     try {
       await referenceImageToUpload.putFile(_selectedImage!);
       final String imageUrl = await referenceImageToUpload.getDownloadURL();
 
-      // Speichere die Daten in der Sammlung newClubRequests
-      await FirebaseFirestore.instance
-          .collection('newClubRequest')
-          .doc(userId)
-          .set({
-        'club_name': clubName,
-        'club_street': clubStreet,
-        'club_house_number': clubHouseNumber,
-        'club_zip_code': clubZipCode,
-        'club_city': clubCity,
-        'owner_name': ownerName,
-        'owner_street': ownerStreet,
-        'owner_house_number': ownerHouseNumber,
-        'owner_zip_code': ownerZipCode,
-        'owner_city': ownerCity,
-        'image_url': imageUrl,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+      // Prüfen, ob bereits ein Club existiert
+      QuerySnapshot clubSnapshot = await FirebaseFirestore.instance
+          .collection('clubs')
+          .where('owner_id', isEqualTo: userId)
+          .get();
 
-      // Erstelle einen neuen Eintrag in der Sammlung owners und erhalte die Dokument-ID
-      DocumentReference ownerRef =
-          await FirebaseFirestore.instance.collection('owner').add({
-        'name': ownerName,
-        'street': ownerStreet,
-        'house_number': ownerHouseNumber,
-        'zip_code': ownerZipCode,
-        'city': ownerCity,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-      final newDocRef = FirebaseFirestore.instance.collection('club').doc();
-      // Speichere die Daten in der Sammlung clubs mit einer Referenz zum Owner
-      await newDocRef.set({
-        'name': clubName,
-        'street': clubStreet,
-        'house_number': clubHouseNumber,
-        'zip_code': clubZipCode,
-        'city': clubCity,
-        'owner_id': ownerRef.id, // Referenz auf den Owner
-        'timestamp': FieldValue.serverTimestamp(),
-        'document_id': newDocRef.id, // Füge die Dokumenten-ID hinzu
-      });
+      if (clubSnapshot.docs.isEmpty) {
+        // Speichere die Daten in der Sammlung newClubRequest
+        await FirebaseFirestore.instance
+            .collection('newClubRequest')
+            .doc(userId)
+            .set({
+          'club_name': clubName,
+          'club_street': clubStreet,
+          'club_house_number': clubHouseNumber,
+          'club_zip_code': clubZipCode,
+          'club_city': clubCity,
+          'owner_name': ownerName,
+          'owner_street': ownerStreet,
+          'owner_house_number': ownerHouseNumber,
+          'owner_zip_code': ownerZipCode,
+          'owner_city': ownerCity,
+          'image_url': imageUrl,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Daten erfolgreich gespeichert')),
-      );
+        // Erstelle oder aktualisiere den Owner-Eintrag
+        await FirebaseFirestore.instance.collection('owner').doc(userId).set({
+          'name': ownerName,
+          'street': ownerStreet,
+          'house_number': ownerHouseNumber,
+          'zip_code': ownerZipCode,
+          'city': ownerCity,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+
+        // Speichere die Daten in der Sammlung club
+        await FirebaseFirestore.instance.collection('club').doc(userId).set({
+          'name': clubName,
+          'street': clubStreet,
+          'house_number': clubHouseNumber,
+          'zip_code': clubZipCode,
+          'city': clubCity,
+          'owner_id': userId, // Referenz auf den Owner
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Daten erfolgreich gespeichert')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sie sind bereits Eigentümer eines Clubs')),
+        );
+      }
 
       _clubNameController.clear();
       _clubStreetController.clear();
