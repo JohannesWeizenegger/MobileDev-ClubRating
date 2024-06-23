@@ -25,6 +25,7 @@ class _ClubPageState extends State<ClubPage> {
   final TextEditingController _ownerZipCodeController = TextEditingController();
   final TextEditingController _ownerCityController = TextEditingController();
   File? _selectedImage;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,9 @@ class _ClubPageState extends State<ClubPage> {
       appBar: AppBar(
         title: const Text("Verkäufer"),
       ),
-      body: Padding(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -258,11 +261,18 @@ class _ClubPageState extends State<ClubPage> {
   }
 
   Future<void> _saveClubData() async {
+    setState(() {
+      isLoading = true;
+    });
+
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('User ist nicht eingeloggt')),
       );
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
 
@@ -270,6 +280,9 @@ class _ClubPageState extends State<ClubPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Bitte wählen Sie ein Bild aus')),
       );
+      setState(() {
+        isLoading = false;
+      });
       return;
     }
 
@@ -295,7 +308,7 @@ class _ClubPageState extends State<ClubPage> {
 
       // Prüfen, ob bereits ein Club existiert
       QuerySnapshot clubSnapshot = await FirebaseFirestore.instance
-          .collection('clubs')
+          .collection('club')
           .where('owner_id', isEqualTo: userId)
           .get();
 
@@ -329,8 +342,9 @@ class _ClubPageState extends State<ClubPage> {
           'timestamp': FieldValue.serverTimestamp(),
         });
 
-        // Speichere die Daten in der Sammlung club
-        await FirebaseFirestore.instance.collection('club').doc(userId).set({
+        // Erstelle einen neuen Club-Eintrag mit einer eindeutigen ID
+        DocumentReference clubRef = FirebaseFirestore.instance.collection('club').doc();
+        await clubRef.set({
           'name': clubName,
           'street': clubStreet,
           'house_number': clubHouseNumber,
@@ -345,7 +359,7 @@ class _ClubPageState extends State<ClubPage> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sie sind bereits Eigentümer eines Clubs')),
+          const SnackBar(content: Text('Ein Club mit diesem Inhaber existiert bereits')),
         );
       }
 
@@ -361,11 +375,15 @@ class _ClubPageState extends State<ClubPage> {
       _ownerCityController.clear();
       setState(() {
         _selectedImage = null;
+        isLoading = false;
       });
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Fehler beim Speichern: $error')),
       );
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
