@@ -16,12 +16,14 @@ class _ClubPageState extends State<ClubPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _clubNameController = TextEditingController();
   final TextEditingController _clubStreetController = TextEditingController();
-  final TextEditingController _clubHouseNumberController = TextEditingController();
+  final TextEditingController _clubHouseNumberController =
+      TextEditingController();
   final TextEditingController _clubZipCodeController = TextEditingController();
   final TextEditingController _clubCityController = TextEditingController();
   final TextEditingController _ownerNameController = TextEditingController();
   final TextEditingController _ownerStreetController = TextEditingController();
-  final TextEditingController _ownerHouseNumberController = TextEditingController();
+  final TextEditingController _ownerHouseNumberController =
+      TextEditingController();
   final TextEditingController _ownerZipCodeController = TextEditingController();
   final TextEditingController _ownerCityController = TextEditingController();
   File? _selectedImage;
@@ -228,8 +230,7 @@ class _ClubPageState extends State<ClubPage> {
                 icon: const Icon(Icons.photo_library),
                 label: const Text('Bild aus Galerie auswählen'),
               ),
-              if (_selectedImage != null)
-                Image.file(_selectedImage!),
+              if (_selectedImage != null) Image.file(_selectedImage!),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
@@ -285,17 +286,22 @@ class _ClubPageState extends State<ClubPage> {
     final String ownerHouseNumber = _ownerHouseNumberController.text;
     final String ownerZipCode = _ownerZipCodeController.text;
     final String ownerCity = _ownerCityController.text;
-    final String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
+    final String uniqueFileName =
+        DateTime.now().millisecondsSinceEpoch.toString();
     final Reference referenceRoot = FirebaseStorage.instance.ref();
     final Reference referenceDirImages = referenceRoot.child('images');
-    final Reference referenceImageToUpload = referenceDirImages.child(uniqueFileName);
+    final Reference referenceImageToUpload =
+        referenceDirImages.child(uniqueFileName);
 
     try {
       await referenceImageToUpload.putFile(_selectedImage!);
       final String imageUrl = await referenceImageToUpload.getDownloadURL();
 
       // Speichere die Daten in der Sammlung newClubRequests
-      await FirebaseFirestore.instance.collection('newClubRequest').doc(userId).set({
+      await FirebaseFirestore.instance
+          .collection('newClubRequest')
+          .doc(userId)
+          .set({
         'club_name': clubName,
         'club_street': clubStreet,
         'club_house_number': clubHouseNumber,
@@ -311,7 +317,8 @@ class _ClubPageState extends State<ClubPage> {
       });
 
       // Erstelle einen neuen Eintrag in der Sammlung owners und erhalte die Dokument-ID
-      DocumentReference ownerRef = await FirebaseFirestore.instance.collection('owner').add({
+      DocumentReference ownerRef =
+          await FirebaseFirestore.instance.collection('owner').add({
         'name': ownerName,
         'street': ownerStreet,
         'house_number': ownerHouseNumber,
@@ -319,9 +326,9 @@ class _ClubPageState extends State<ClubPage> {
         'city': ownerCity,
         'timestamp': FieldValue.serverTimestamp(),
       });
-
+      final newDocRef = FirebaseFirestore.instance.collection('club').doc();
       // Speichere die Daten in der Sammlung clubs mit einer Referenz zum Owner
-      await FirebaseFirestore.instance.collection('club').add({
+      await newDocRef.set({
         'name': clubName,
         'street': clubStreet,
         'house_number': clubHouseNumber,
@@ -329,6 +336,7 @@ class _ClubPageState extends State<ClubPage> {
         'city': clubCity,
         'owner_id': ownerRef.id, // Referenz auf den Owner
         'timestamp': FieldValue.serverTimestamp(),
+        'document_id': newDocRef.id, // Füge die Dokumenten-ID hinzu
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
