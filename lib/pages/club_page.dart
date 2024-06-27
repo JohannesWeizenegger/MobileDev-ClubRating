@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
+import '/pages/osm_service.dart';
+import '/pages/firebase_service.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({Key? key}) : super(key: key);
@@ -58,7 +58,6 @@ class _ClubPageState extends State<ClubPage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -236,7 +235,7 @@ class _ClubPageState extends State<ClubPage> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    _saveClubData();
+                    _validateAndSaveClubData();
                   }
                 },
                 child: const Text('Absenden'),
@@ -260,123 +259,61 @@ class _ClubPageState extends State<ClubPage> {
     }
   }
 
-  Future<void> _saveClubData() async {
+  Future<void> _validateAndSaveClubData() async {
     setState(() {
       isLoading = true;
     });
 
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User ist nicht eingeloggt')),
-      );
-      setState(() {
-        isLoading = false;
-      });
-      return;
-    }
-
-    if (_selectedImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte wählen Sie ein Bild aus')),
-      );
-      setState(() {
-        isLoading = false;
-      });
-      return;
-    }
-
-    final String userId = user.uid;
-    final String clubName = _clubNameController.text;
     final String clubStreet = _clubStreetController.text;
     final String clubHouseNumber = _clubHouseNumberController.text;
     final String clubZipCode = _clubZipCodeController.text;
     final String clubCity = _clubCityController.text;
-    final String ownerName = _ownerNameController.text;
-    final String ownerStreet = _ownerStreetController.text;
-    final String ownerHouseNumber = _ownerHouseNumberController.text;
-    final String ownerZipCode = _ownerZipCodeController.text;
-    final String ownerCity = _ownerCityController.text;
-    final String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
-    final Reference referenceRoot = FirebaseStorage.instance.ref();
-    final Reference referenceDirImages = referenceRoot.child('images');
-    final Reference referenceImageToUpload = referenceDirImages.child(uniqueFileName);
 
-    try {
-      await referenceImageToUpload.putFile(_selectedImage!);
-      final String imageUrl = await referenceImageToUpload.getDownloadURL();
+    final isValidAddress = await OSMService.validateAddress(clubStreet, clubHouseNumber, clubZipCode, clubCity);
 
-      // Prüfen, ob bereits ein Club existiert
-      QuerySnapshot clubSnapshot = await FirebaseFirestore.instance
-          .collection('club')
-          .where('owner_id', isEqualTo: userId)
-          .get();
-
-      if (clubSnapshot.docs.isEmpty) {
-        // Speichere die Daten in der Sammlung newClubRequest
-        await FirebaseFirestore.instance
-            .collection('newClubRequest')
-            .doc(userId)
-            .set({
-          'club_name': clubName,
-          'club_street': clubStreet,
-          'club_house_number': clubHouseNumber,
-          'club_zip_code': clubZipCode,
-          'club_city': clubCity,
-          'owner_name': ownerName,
-          'owner_street': ownerStreet,
-          'owner_house_number': ownerHouseNumber,
-          'owner_zip_code': ownerZipCode,
-          'owner_city': ownerCity,
-          'image_url': imageUrl,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-
-        // Erstelle oder aktualisiere den Owner-Eintrag
-        await FirebaseFirestore.instance.collection('owner').doc(userId).set({
-          'name': ownerName,
-          'street': ownerStreet,
-          'house_number': ownerHouseNumber,
-          'zip_code': ownerZipCode,
-          'city': ownerCity,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-
-        // Erstelle einen neuen Club-Eintrag mit einer eindeutigen ID
-        DocumentReference clubRef = FirebaseFirestore.instance.collection('club').doc();
-        await clubRef.set({
-          'name': clubName,
-          'street': clubStreet,
-          'house_number': clubHouseNumber,
-          'zip_code': clubZipCode,
-          'city': clubCity,
-          'owner_id': userId, // Referenz auf den Owner
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Daten erfolgreich gespeichert')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ein Club mit diesem Inhaber existiert bereits')),
-        );
-      }
-
-      _clubNameController.clear();
-      _clubStreetController.clear();
-      _clubHouseNumberController.clear();
-      _clubZipCodeController.clear();
-      _clubCityController.clear();
-      _ownerNameController.clear();
-      _ownerStreetController.clear();
-      _ownerHouseNumberController.clear();
-      _ownerZipCodeController.clear();
-      _ownerCityController.clear();
+    if (!isValidAddress) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Die eingegebene Adresse ist ungültig')),
+      );
       setState(() {
-        _selectedImage = null;
         isLoading = false;
       });
+      return;
+    }
+
+    try {
+      await FirebaseService.saveClubData(
+        clubName: _clubNameController.text,
+        clubStreet: _clubStreetController.text,
+        clubHouseNumber: _clubHouseNumberController.text,
+        clubZipCode: _clubZipCodeController.text,
+        clubCity: _clubCityController.text,
+        ownerName: _ownerNameController.text,
+        ownerStreet: _ownerStreetController.text,
+        ownerHouseNumber: _ownerHouseNumberController.text,
+        ownerZipCode: _ownerZipCodeController.text,
+        ownerCity: _ownerCityController.text,
+        selectedImage: _selectedImage,
+      );
+
+      setState(() {
+        isLoading = false;
+        _clubNameController.clear();
+        _clubStreetController.clear();
+        _clubHouseNumberController.clear();
+        _clubZipCodeController.clear();
+        _clubCityController.clear();
+        _ownerNameController.clear();
+        _ownerStreetController.clear();
+        _ownerHouseNumberController.clear();
+        _ownerZipCodeController.clear();
+        _ownerCityController.clear();
+        _selectedImage = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Daten erfolgreich gespeichert')),
+      );
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Fehler beim Speichern: $error')),
