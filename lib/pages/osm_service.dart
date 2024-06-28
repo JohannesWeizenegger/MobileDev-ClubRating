@@ -1,50 +1,78 @@
+import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math';
-import 'package:http/http.dart' as http;
 
 class OSMService {
-  static Future<bool> validateAddress(String street, String houseNumber, String zipCode, String city) async {
-    final url = Uri.parse('https://nominatim.openstreetmap.org/search?street=$houseNumber $street&city=$city&postalcode=$zipCode&format=json');
+  static Future<Map<String, double>?> getCoordinates(
+      String street, String houseNumber, String zipCode, String city) async {
+    final String query = [
+      if (houseNumber.isNotEmpty) houseNumber,
+      if (street.isNotEmpty) street,
+      if (city.isNotEmpty) city,
+      if (zipCode.isNotEmpty) zipCode,
+    ].join(', ');
+
+    final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/search?q=$query&format=json');
+
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body) as List;
+      final List data = json.decode(response.body);
+      if (data.isNotEmpty) {
+        return {
+          'lat': double.parse(data[0]['lat']),
+          'lon': double.parse(data[0]['lon']),
+        };
+      }
+    }
+    return null;
+  }
+
+  static Future<String?> getPlaceFromCoordinates(String query) async {
+    final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/search?q=$query&format=json');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body);
+      if (data.isNotEmpty) {
+        final displayName = data[0]['display_name'];
+        final parts = displayName.split(',');
+        if (parts.length >= 2) {
+          // Return format: "PLZ, Ort"
+          return parts[0].trim() + ', ' + parts[1].trim();
+        } else {
+          return displayName;
+        }
+      }
+    }
+    return null;
+  }
+
+  static Future<bool> validateAddress(String street, String houseNumber, String zipCode, String city) async {
+    final String query = [
+      if (houseNumber.isNotEmpty) houseNumber,
+      if (street.isNotEmpty) street,
+      if (city.isNotEmpty) city,
+      if (zipCode.isNotEmpty) zipCode,
+    ].join(', ');
+
+    final url = Uri.parse('https://nominatim.openstreetmap.org/search?q=$query&format=json');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body);
       return data.isNotEmpty;
     } else {
       return false;
     }
   }
 
-  static Future<Map<String, double>?> getCoordinates(String street, String houseNumber, String zipCode, String city) async {
-    final url = Uri.parse('https://nominatim.openstreetmap.org/search?street=$houseNumber $street&city=$city&postalcode=$zipCode&format=json');
-    final response = await http.get(url);
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body) as List;
-      if (data.isNotEmpty) {
-        final firstResult = data.first;
-        final lat = double.parse(firstResult['lat']);
-        final lon = double.parse(firstResult['lon']);
-        return {'lat': lat, 'lon': lon};
-      }
-    }
-    return null;
-  }
-
   static double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const earthRadius = 6371; // Erdradius in Kilometern
-    final dLat = _degreeToRadian(lat2 - lat1);
-    final dLon = _degreeToRadian(lon2 - lon1);
-
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_degreeToRadian(lat1)) * cos(_degreeToRadian(lat2)) *
-            sin(dLon / 2) * sin(dLon / 2);
-    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
-
-    return earthRadius * c; // Abstand in Kilometern
-  }
-
-  static double _degreeToRadian(double degree) {
-    return degree * pi / 180;
+    const double p = 0.017453292519943295;
+    double a = 0.5 - cos((lat2 - lat1) * p) / 2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
+    return 12742 * asin(sqrt(a));
   }
 }

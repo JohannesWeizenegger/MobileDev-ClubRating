@@ -1,8 +1,8 @@
-import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'osm_service.dart'; // Importiere die OSM-Services
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:io';
+import 'osm_service.dart';
 
 class FirebaseService {
   static Future<void> saveClubData({
@@ -23,11 +23,12 @@ class FirebaseService {
       throw Exception('User ist nicht eingeloggt');
     }
 
+    final String userId = user.uid;
+
     if (selectedImage == null) {
       throw Exception('Bitte wählen Sie ein Bild aus');
     }
 
-    final String userId = user.uid;
     final String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
     final Reference referenceRoot = FirebaseStorage.instance.ref();
     final Reference referenceDirImages = referenceRoot.child('images');
@@ -36,31 +37,18 @@ class FirebaseService {
     await referenceImageToUpload.putFile(selectedImage);
     final String imageUrl = await referenceImageToUpload.getDownloadURL();
 
-    // Prüfen, ob bereits ein Club existiert
-    QuerySnapshot clubSnapshot = await FirebaseFirestore.instance
-        .collection('club')
-        .where('owner_id', isEqualTo: userId)
-        .get();
-
-    if (clubSnapshot.docs.isNotEmpty) {
-      throw Exception('Ein Club mit diesem Owner existiert bereits');
-    }
-
-    // Erhalte die Geokoordinaten
-    final coordinates = await OSMService.getCoordinates(
-      clubStreet,
-      clubHouseNumber,
-      clubZipCode,
-      clubCity,
-    );
+    final coordinates = await OSMService.getCoordinates(clubStreet, clubHouseNumber, clubZipCode, clubCity);
 
     if (coordinates == null) {
-      throw Exception('Koordinaten konnten nicht ermittelt werden');
+      throw Exception('Ungültige Adresse');
     }
 
-    // Speichere die Daten in der Sammlung newClubRequest
+    final double latitude = coordinates['lat']!;
+    final double longitude = coordinates['lon']!;
+
+    // Speichere die Daten in der Sammlung newClubRequests
     await FirebaseFirestore.instance
-        .collection('newClubRequest')
+        .collection('newClubRequests')
         .doc(userId)
         .set({
       'club_name': clubName,
@@ -77,8 +65,9 @@ class FirebaseService {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
-    // Erstelle oder aktualisiere den Owner-Eintrag
-    await FirebaseFirestore.instance.collection('owner').doc(userId).set({
+    // Erstelle einen neuen Eintrag in der Sammlung owners und erhalte die Dokument-ID
+    DocumentReference ownerRef = FirebaseFirestore.instance.collection('owner').doc(userId);
+    await ownerRef.set({
       'name': ownerName,
       'street': ownerStreet,
       'house_number': ownerHouseNumber,
@@ -87,17 +76,16 @@ class FirebaseService {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
-    // Erstelle einen neuen Club-Eintrag mit einer eindeutigen ID und füge die Koordinaten hinzu
-    DocumentReference clubRef = FirebaseFirestore.instance.collection('club').doc();
-    await clubRef.set({
+    // Speichere die Daten in der Sammlung clubs mit einer Referenz zum Owner
+    await FirebaseFirestore.instance.collection('club').add({
       'name': clubName,
       'street': clubStreet,
       'house_number': clubHouseNumber,
       'zip_code': clubZipCode,
       'city': clubCity,
       'owner_id': userId, // Referenz auf den Owner
-      'latitude': coordinates['lat'], // Latitude
-      'longitude': coordinates['lon'], // Longitude
+      'latitude': latitude,
+      'longitude': longitude,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
