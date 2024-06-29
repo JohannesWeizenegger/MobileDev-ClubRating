@@ -254,125 +254,132 @@ class _CustomerPageState extends State<CustomerPage> {
       appBar: AppBar(
         title: const Text("Canna-Clubs"),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _searchNameController,
-                    decoration: const InputDecoration(
-                      labelText: "Suche einen Club",
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(Icons.place),
-                  onPressed: _openLocationDialog,
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: performSearch,
-                  child: const Text("Finden"),
-                ),
-              ],
-            ),
-          ),
-          if (_locationQuery != null && _maxDistance != null)
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Chip(
-                label: Text("$_locationQuery (+${_maxDistance!.toInt()} km)"),
-                onDeleted: _resetSearch,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _searchNameController,
+                      decoration: const InputDecoration(
+                        labelText: "Clubname",
+                      ),
+                      onFieldSubmitted: (value) {
+                        performSearch();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: Icon(Icons.place),
+                    onPressed: _openLocationDialog,
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: performSearch,
+                    child: const Text("Finden"),
+                  ),
+                ],
               ),
             ),
-          Expanded(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : clubs.isEmpty
-                ? const Center(child: Text("Keine Clubs gefunden."))
-                : ListView.builder(
-              itemCount: clubs.length,
-              itemBuilder: (context, index) {
-                final club = clubs[index];
-                final userRating = club['userRating'];
+            if (_locationQuery != null && _maxDistance != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Chip(
+                  label: Text("$_locationQuery (+${_maxDistance!.toInt()} km)"),
+                  onDeleted: _resetSearch,
+                ),
+              ),
+            if (isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (clubs.isEmpty)
+              const Center(child: Text("Keine Clubs gefunden."))
+            else
+              ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: clubs.length,
+                itemBuilder: (context, index) {
+                  final club = clubs[index];
+                  final userRating = club['userRating'];
 
-                return ListTile(
-                  title: Text(club['data']['name'] ?? 'N/A'),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${club['data']['street'] ?? 'N/A'} ${club['data']['house_number'] ?? ''}'),
-                      Text('${club['data']['zip_code'] ?? 'N/A'} ${club['data']['city'] ?? ''}'),
-                      Row(
-                        children: [
-                          Text('${club['avgRating'].toStringAsFixed(1)}'),
-                          const SizedBox(width: 8),
-                          Row(
-                            children: List.generate(5, (index) {
-                              double starRating = index + 1;
-                              double fillPercentage = 0.0;
+                  return ListTile(
+                    title: Text(club['data']['name'] ?? 'N/A'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${club['data']['street'] ?? 'N/A'} ${club['data']['house_number'] ?? ''}'),
+                        Text('${club['data']['zip_code'] ?? 'N/A'} ${club['data']['city'] ?? ''}'),
+                        Row(
+                          children: [
+                            Text('${club['avgRating'].toStringAsFixed(1)}'),
+                            const SizedBox(width: 8),
+                            Row(
+                              children: List.generate(5, (index) {
+                                double starRating = index + 1;
+                                double fillPercentage = 0.0;
 
-                              double remainder = club['avgRating'] - (starRating - 1);
-                              if (remainder >= 0.2 && remainder <= 0.4) {
-                                fillPercentage = 0.4;
-                              } else if (remainder == 0.5) {
-                                fillPercentage = 0.5;
-                              } else if (remainder >= 0.6 && remainder <= 0.8) {
-                                fillPercentage = 0.6;
-                              } else if (remainder >= 0.9) {
-                                fillPercentage = 1.0;
-                              } else if (remainder > 0) {
-                                fillPercentage = remainder;
-                              }
-                              return Stack(
-                                children: [
-                                  Icon(
-                                    Icons.star_border,
-                                    color: Colors.amber,
-                                  ),
-                                  ClipRect(
-                                    clipper: StarClipper(fillPercentage),
-                                    child: Icon(
-                                      Icons.star,
+                                double remainder = club['avgRating'] - (starRating - 1);
+                                if (remainder >= 0.2 && remainder <= 0.4) {
+                                  fillPercentage = 0.4;
+                                } else if (remainder == 0.5) {
+                                  fillPercentage = 0.5;
+                                } else if (remainder >= 0.6 && remainder <= 0.8) {
+                                  fillPercentage = 0.6;
+                                } else if (remainder >= 0.9) {
+                                  fillPercentage = 1.0;
+                                } else if (remainder > 0) {
+                                  fillPercentage = remainder;
+                                }
+                                return Stack(
+                                  children: [
+                                    Icon(
+                                      Icons.star_border,
                                       color: Colors.amber,
                                     ),
-                                  ),
-                                ],
-                              );
-                            }),
-                          ),
-                          Text(' (${club['ratingCount']} Bewertungen)'),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          const Text('Bewertung: '),
-                          for (int i = 1; i <= 5; i++)
-                            IconButton(
-                              icon: Icon(
-                                i <= (userRating ?? 0) ? Icons.star : Icons.star_border,
-                                color: Colors.amber,
-                              ),
-                              onPressed: () {
-                                saveOrUpdateRating(club['id'], i);
-                              },
-                            )
-                        ],
-                      ),
-                    ],
-                  ),
-                  onTap: () {
-                    // Hier könntest du eine Detailseite aufrufen oder weitere Aktionen durchführen
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+                                    ClipRect(
+                                      clipper: StarClipper(fillPercentage),
+                                      child: Icon(
+                                        Icons.star,
+                                        color: Colors.amber,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                            ),
+                            Text(' (${club['ratingCount']} Bewertungen)'),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: const Text('Bewertung: ')),
+                            for (int i = 1; i <= 5; i++)
+                              IconButton(
+                                icon: Icon(
+                                  i <= (userRating ?? 0) ? Icons.star : Icons.star_border,
+                                  color: Colors.amber,
+                                ),
+                                onPressed: () {
+                                  saveOrUpdateRating(club['id'], i);
+                                },
+                              )
+                          ],
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      // Hier könntest du eine Detailseite aufrufen oder weitere Aktionen durchführen
+                    },
+                  );
+                },
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -421,62 +428,64 @@ class _LocationDialogState extends State<LocationDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text("Standort und Entfernung"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextFormField(
-            controller: _locationController,
-            decoration: const InputDecoration(
-              labelText: "PLZ oder Ort",
+    return SingleChildScrollView(
+      child: AlertDialog(
+        title: const Text("Standort und Entfernung"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _locationController,
+              decoration: const InputDecoration(
+                labelText: "PLZ oder Ort",
+              ),
             ),
+            const SizedBox(height: 16),
+            Text("Entfernung: ${_radius.toInt()} km"),
+            Slider(
+              value: _radius,
+              min: 1,
+              max: 100,
+              divisions: 99,
+              label: _radius.toInt().toString(),
+              onChanged: (value) {
+                setState(() {
+                  _radius = value;
+                });
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("Abbrechen"),
           ),
-          const SizedBox(height: 16),
-          Text("Entfernung: ${_radius.toInt()} km"),
-          Slider(
-            value: _radius,
-            min: 1,
-            max: 100,
-            divisions: 99,
-            label: _radius.toInt().toString(),
-            onChanged: (value) {
-              setState(() {
-                _radius = value;
+          ElevatedButton(
+            onPressed: () async {
+              String locationName = _locationController.text;
+              final valid = await OSMService.validateAddress("", "", locationName, "");
+              if (!valid) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Ungültige Adresse")),
+                );
+                return;
+              }
+              if (locationName.isNotEmpty) {
+                final place = await OSMService.getPlaceFromCoordinates(locationName);
+                locationName = place ?? locationName;
+              }
+              Navigator.pop(context, {
+                'location': locationName,
+                'radius': _radius,
               });
             },
+            child: const Text("Speichern"),
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text("Abbrechen"),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            String locationName = _locationController.text;
-            final valid = await OSMService.validateAddress("", "", locationName, "");
-            if (!valid) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Ungültige Adresse")),
-              );
-              return;
-            }
-            if (locationName.isNotEmpty) {
-              final place = await OSMService.getPlaceFromCoordinates(locationName);
-              locationName = place ?? locationName;
-            }
-            Navigator.pop(context, {
-              'location': locationName,
-              'radius': _radius,
-            });
-          },
-          child: const Text("Speichern"),
-        ),
-      ],
     );
   }
 }

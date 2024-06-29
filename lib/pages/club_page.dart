@@ -27,6 +27,9 @@ class _ClubPageState extends State<ClubPage> {
   File? _selectedImage;
   bool isLoading = false;
 
+  bool _isClubAddressValid = true;
+  bool _isOwnerAddressValid = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,8 +67,9 @@ class _ClubPageState extends State<ClubPage> {
                   Expanded(
                     child: TextFormField(
                       controller: _clubStreetController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "Straße",
+                        errorText: _isClubAddressValid ? null : 'Ungültige Adresse',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -80,8 +84,9 @@ class _ClubPageState extends State<ClubPage> {
                     width: 80,
                     child: TextFormField(
                       controller: _clubHouseNumberController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "Hausnr.",
+                        errorText: _isClubAddressValid ? null : 'Ungültige Adresse',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -99,8 +104,9 @@ class _ClubPageState extends State<ClubPage> {
                   Expanded(
                     child: TextFormField(
                       controller: _clubZipCodeController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "PLZ",
+                        errorText: _isClubAddressValid ? null : 'Ungültige Adresse',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -114,8 +120,9 @@ class _ClubPageState extends State<ClubPage> {
                   Expanded(
                     child: TextFormField(
                       controller: _clubCityController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "Ort",
+                        errorText: _isClubAddressValid ? null : 'Ungültige Adresse',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -151,8 +158,9 @@ class _ClubPageState extends State<ClubPage> {
                   Expanded(
                     child: TextFormField(
                       controller: _ownerStreetController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "Straße",
+                        errorText: _isOwnerAddressValid ? null : 'Ungültige Adresse',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -167,8 +175,9 @@ class _ClubPageState extends State<ClubPage> {
                     width: 80,
                     child: TextFormField(
                       controller: _ownerHouseNumberController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "Hausnr.",
+                        errorText: _isOwnerAddressValid ? null : 'Ungültige Adresse',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -186,8 +195,9 @@ class _ClubPageState extends State<ClubPage> {
                   Expanded(
                     child: TextFormField(
                       controller: _ownerZipCodeController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "PLZ",
+                        errorText: _isOwnerAddressValid ? null : 'Ungültige Adresse',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -201,8 +211,9 @@ class _ClubPageState extends State<ClubPage> {
                   Expanded(
                     child: TextFormField(
                       controller: _ownerCityController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "Ort",
+                        errorText: _isOwnerAddressValid ? null : 'Ungültige Adresse',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -268,16 +279,24 @@ class _ClubPageState extends State<ClubPage> {
     final String clubHouseNumber = _clubHouseNumberController.text;
     final String clubZipCode = _clubZipCodeController.text;
     final String clubCity = _clubCityController.text;
+    final String ownerStreet = _ownerStreetController.text;
+    final String ownerHouseNumber = _ownerHouseNumberController.text;
+    final String ownerZipCode = _ownerZipCodeController.text;
+    final String ownerCity = _ownerCityController.text;
 
-    final isValidAddress = await OSMService.validateAddress(clubStreet, clubHouseNumber, clubZipCode, clubCity);
+    final isClubAddressValid = await OSMService.validateAddress(clubStreet, clubHouseNumber, clubZipCode, clubCity);
+    final isOwnerAddressValid = await OSMService.validateAddress(ownerStreet, ownerHouseNumber, ownerZipCode, ownerCity);
 
-    if (!isValidAddress) {
+    setState(() {
+      _isClubAddressValid = isClubAddressValid;
+      _isOwnerAddressValid = isOwnerAddressValid;
+      isLoading = false;
+    });
+
+    if (!isClubAddressValid || !isOwnerAddressValid) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Die eingegebene Adresse ist ungültig')),
+        const SnackBar(content: Text('Eine oder mehrere Adressen sind ungültig')),
       );
-      setState(() {
-        isLoading = false;
-      });
       return;
     }
 
@@ -297,7 +316,6 @@ class _ClubPageState extends State<ClubPage> {
       );
 
       setState(() {
-        isLoading = false;
         _clubNameController.clear();
         _clubStreetController.clear();
         _clubHouseNumberController.clear();
@@ -318,10 +336,11 @@ class _ClubPageState extends State<ClubPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Fehler beim Speichern: $error')),
       );
-      setState(() {
-        isLoading = false;
-      });
     }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
