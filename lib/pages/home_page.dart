@@ -87,22 +87,25 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) async {
-          if (index == 1) {
-            await _checkRegistrationStatus();
-          }
           setState(() {
             _currentIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: 'Clubs finden',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'Club registrieren',
-          ),
+          if (_alreadyRegistered)
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.nature_people),
+              label: 'Mein Club',
+            )
+          else
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.add),
+              label: 'Club registrieren',
+            ),
         ],
       ),
     );

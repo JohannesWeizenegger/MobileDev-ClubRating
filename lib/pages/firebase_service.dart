@@ -112,6 +112,8 @@ class FirebaseService {
       throw Exception('User ist nicht eingeloggt');
     }
 
+    final String userName = user.email ?? 'Anonym';
+
     await FirebaseFirestore.instance
         .collection('club')
         .doc(clubId)
@@ -119,6 +121,7 @@ class FirebaseService {
         .add({
       'content': commentContent,
       'userId': user.uid,
+      'userName': userName,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
@@ -157,5 +160,19 @@ class FirebaseService {
         .collection('club')
         .doc(clubId)
         .update({'description': description});
+  }
+
+  static Future<void> updateDescription(
+      String newContent, String clubId) async {
+    if (newContent.trim().isEmpty) return;
+    await FirebaseFirestore.instance.collection('club').doc(clubId).update({
+      'description': newContent.trim(),
+    });
+  }
+
+  static Future<void> deleteDescription(String clubId) async {
+    await FirebaseFirestore.instance.collection('club').doc(clubId).update({
+      'description': FieldValue.delete(),
+    });
   }
 }

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'firebase_service.dart'; // FirebaseService importieren
 
 class RegisteredClubPage extends StatefulWidget {
@@ -15,17 +16,19 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
   Map<String, dynamic>? clubData;
   String? clubId;
   bool isLoading = true;
+  User? currentUser;
   TextEditingController _descriptionController = TextEditingController();
   TextEditingController _editDescriptionController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    currentUser = _auth.currentUser;
     fetchClubData();
   }
 
   Future<void> fetchClubData() async {
-    User? user = _auth.currentUser;
+    User? user = currentUser;
     if (user != null) {
       String userId = user.uid;
       QuerySnapshot clubSnapshot = await FirebaseFirestore.instance
@@ -75,7 +78,7 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
   }
 
   Future<int?> getUserRating(String clubId) async {
-    User? user = _auth.currentUser;
+    User? user = currentUser;
     if (user == null) return null;
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('club')
@@ -92,7 +95,7 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
   }
 
   void saveOrUpdateRating(String clubId, int rating) async {
-    User? user = _auth.currentUser;
+    User? user = currentUser;
     if (user == null) return;
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('club')
@@ -125,85 +128,6 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
     setState(() {});
   }
 
-  Future<void> addDescription() async {
-    User? user = _auth.currentUser;
-    if (user == null ||
-        clubId == null ||
-        _descriptionController.text.trim().isEmpty) {
-      print(
-          "Cannot add description: user, clubId, or description content is null/empty");
-      return;
-    }
-
-    print("Adding description: ${_descriptionController.text.trim()}");
-
-    await FirebaseFirestore.instance.collection('club').doc(clubId).set({
-      'description': _descriptionController.text.trim(),
-    }, SetOptions(merge: true));
-
-    print("Description added successfully.");
-
-    _descriptionController.clear();
-    setState(() {});
-  }
-
-  Future<void> deleteDescription() async {
-    if (clubId == null) return;
-    await FirebaseFirestore.instance.collection('club').doc(clubId).update({
-      'description':
-          FieldValue.delete(), // Löscht das 'description'-Feld aus dem Dokument
-    });
-    setState(() {});
-  }
-
-  Future<void> updateDescription(String newContent) async {
-    if (clubId == null || newContent.trim().isEmpty) return;
-    await FirebaseFirestore.instance.collection('club').doc(clubId).update({
-      'description': newContent.trim(),
-    });
-    setState(() {});
-  }
-
-  Future<void> addComment(String descriptionId, String content) async {
-    User? user = _auth.currentUser;
-    if (user == null || clubId == null || content.trim().isEmpty) {
-      print(
-          "Cannot add comment: user, clubId, or comment content is null/empty");
-      return;
-    }
-
-    print("Adding comment: $content");
-
-    await FirebaseFirestore.instance
-        .collection('club')
-        .doc(clubId)
-        .collection('description')
-        .doc(descriptionId)
-        .collection('comments')
-        .add({
-      'content': content.trim(),
-      'userId': user.uid,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
-
-    print("Comment added successfully.");
-
-    setState(() {});
-  }
-
-  Future<void> deleteComment(String descriptionId, String commentId) async {
-    if (clubId == null) return;
-    await FirebaseFirestore.instance
-        .collection('club')
-        .doc(clubId)
-        .collection('description')
-        .doc(descriptionId)
-        .collection('comments')
-        .doc(commentId)
-        .delete();
-    setState(() {});
-  }
-
   Future<void> showEditDescriptionDialog(
       String descriptionId, String descriptionContent) async {
     _editDescriptionController =
@@ -212,12 +136,12 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Notiz bearbeiten'),
+          title: const Text('Beschreibung bearbeiten'),
           content: TextField(
             controller: _editDescriptionController,
             maxLines: null,
             decoration: const InputDecoration(
-              hintText: 'Notiz bearbeiten',
+              hintText: 'Beschreibung bearbeiten',
             ),
           ),
           actions: <Widget>[
@@ -230,7 +154,8 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
             TextButton(
               child: const Text('Speichern'),
               onPressed: () async {
-                await updateDescription(_editDescriptionController.text);
+                await FirebaseService.updateDescription(
+                    _editDescriptionController.text, clubId!);
                 Navigator.of(context).pop();
               },
             ),
@@ -405,7 +330,8 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                     IconButton(
                                       icon: const Icon(Icons.delete),
                                       onPressed: () {
-                                        deleteDescription();
+                                        FirebaseService.deleteDescription(
+                                            clubId!);
                                       },
                                     ),
                                   ],
@@ -440,23 +366,57 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: commentsDocs.map((commentDoc) {
+                                  final timestamp =
+                                      commentDoc['timestamp'] as Timestamp?;
+                                  final formattedDate = timestamp != null
+                                      ? DateFormat('dd.MM.yyyy')
+                                          .format(timestamp.toDate())
+                                      : 'Unbekanntes Datum';
+
                                   return Padding(
                                     padding: const EdgeInsets.only(
                                         left: 16.0, top: 4.0),
-                                    child: Row(
-                                      children: [
-                                        const Text("- "),
-                                        Expanded(
-                                            child: Text(commentDoc['content'])),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete),
-                                          onPressed: () {
-                                            FirebaseService.deleteComment(
-                                                clubId!, commentDoc.id);
-                                          },
-                                        ),
-                                      ],
-                                    ),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                  commentDoc['userName'] ??
+                                                      'Anonym',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              Text(formattedDate,
+                                                  style: TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 12)),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              const Text("- "),
+                                              Expanded(
+                                                child:
+                                                    Text(commentDoc['content']),
+                                              ),
+                                              if (commentDoc['userId'] ==
+                                                  currentUser?.uid)
+                                                IconButton(
+                                                  icon:
+                                                      const Icon(Icons.delete),
+                                                  onPressed: () {
+                                                    FirebaseService
+                                                        .deleteComment(clubId!,
+                                                            commentDoc.id);
+                                                  },
+                                                ),
+                                            ],
+                                          )
+                                        ]),
                                   );
                                 }).toList(),
                               );

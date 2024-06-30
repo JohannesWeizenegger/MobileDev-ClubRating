@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_service.dart';
+import 'package:intl/intl.dart';
 
 class ClubDetailPage extends StatefulWidget {
   final Map<String, dynamic> club;
@@ -61,7 +62,6 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
       print("Cannot add comment: clubId or comment content is null/empty");
       return;
     }
-
     print("Adding comment: ${_commentController.text.trim()}");
 
     await FirebaseService.addComment(clubId!, _commentController.text.trim());
@@ -202,23 +202,56 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: commentsDocs.map((commentDoc) {
+                                    // Abruf des Timestamps und Formatierung des Datums
+                                    final timestamp =
+                                        commentDoc['timestamp'] as Timestamp?;
+                                    final formattedDate = timestamp != null
+                                        ? DateFormat('dd.MM.yyyy')
+                                            .format(timestamp.toDate())
+                                        : 'Unbekanntes Datum';
+
                                     return Padding(
                                       padding: const EdgeInsets.only(
                                           left: 16.0, top: 4.0, bottom: 4.0),
-                                      child: Row(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          const Text("- "),
-                                          Expanded(
-                                            child: Text(commentDoc['content']),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                  commentDoc['userName'] ??
+                                                      'Anonym',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              Text(formattedDate,
+                                                  style: TextStyle(
+                                                      color: Colors.grey,
+                                                      fontSize: 12)),
+                                            ],
                                           ),
-                                          if (commentDoc['userId'] ==
-                                              currentUser?.uid)
-                                            IconButton(
-                                              icon: const Icon(Icons.delete),
-                                              onPressed: () {
-                                                deleteComment(commentDoc.id);
-                                              },
-                                            ),
+                                          Row(
+                                            children: [
+                                              const Text("- "),
+                                              Expanded(
+                                                child:
+                                                    Text(commentDoc['content']),
+                                              ),
+                                              if (commentDoc['userId'] ==
+                                                  currentUser?.uid)
+                                                IconButton(
+                                                  icon:
+                                                      const Icon(Icons.delete),
+                                                  onPressed: () {
+                                                    deleteComment(
+                                                        commentDoc.id);
+                                                  },
+                                                ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     );
