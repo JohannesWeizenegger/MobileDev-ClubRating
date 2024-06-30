@@ -154,25 +154,11 @@ class FirebaseService {
         .delete();
   }
 
-  static Future<void> addOrUpdateDescription(
-      String clubId, String description) async {
-    await FirebaseFirestore.instance
-        .collection('club')
-        .doc(clubId)
-        .update({'description': description});
-  }
-
   static Future<void> updateDescription(
       String newContent, String clubId) async {
     if (newContent.trim().isEmpty) return;
     await FirebaseFirestore.instance.collection('club').doc(clubId).update({
       'description': newContent.trim(),
-    });
-  }
-
-  static Future<void> deleteDescription(String clubId) async {
-    await FirebaseFirestore.instance.collection('club').doc(clubId).update({
-      'description': FieldValue.delete(),
     });
   }
 }

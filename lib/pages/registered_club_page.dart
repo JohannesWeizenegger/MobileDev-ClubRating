@@ -156,6 +156,10 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
               onPressed: () async {
                 await FirebaseService.updateDescription(
                     _editDescriptionController.text, clubId!);
+                // Update the local state as well
+                setState(() {
+                  clubData?['description'] = _editDescriptionController.text;
+                });
                 Navigator.of(context).pop();
               },
             ),
@@ -163,6 +167,30 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
         );
       },
     );
+  }
+
+  Future<void> addOrUpdateDescription(String clubId, String description) async {
+    await FirebaseFirestore.instance.collection('club').doc(clubId).update({
+      'description': description,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    // Lokale Daten aktualisieren
+    setState(() {
+      clubData?['description'] = description;
+    });
+  }
+
+  Future<void> deleteDescription(String clubId) async {
+    await FirebaseFirestore.instance.collection('club').doc(clubId).update({
+      'description': '',
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    // Lokale Daten aktualisieren
+    setState(() {
+      clubData?['description'] = '';
+    });
   }
 
   @override
@@ -300,9 +328,10 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                       IconButton(
                                         icon: const Icon(Icons.send),
                                         onPressed: () {
-                                          FirebaseService
-                                              .addOrUpdateDescription(clubId!,
-                                                  _descriptionController.text);
+                                          addOrUpdateDescription(
+                                              clubId!,
+                                              _descriptionController
+                                                  .text); // Verwende die neue Methode
                                         },
                                       ),
                                     ],
@@ -330,8 +359,8 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                     IconButton(
                                       icon: const Icon(Icons.delete),
                                       onPressed: () {
-                                        FirebaseService.deleteDescription(
-                                            clubId!);
+                                        deleteDescription(
+                                            clubId!); // Verwende die neue Methode
                                       },
                                     ),
                                   ],

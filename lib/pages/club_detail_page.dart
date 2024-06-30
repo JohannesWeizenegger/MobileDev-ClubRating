@@ -43,7 +43,6 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
       var clubDoc =
           await FirebaseFirestore.instance.collection('club').doc(clubId).get();
       var clubData = clubDoc.data();
-      print(clubData);
       if (clubData != null) {
         setState(() {
           description = clubData['description'];
@@ -91,202 +90,216 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                    children: [
-                      ListTile(
-                        title: Text(clubData['name'] ?? 'N/A'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                                '${clubData['street'] ?? 'N/A'} ${clubData['house_number'] ?? ''}'),
-                            Text(
-                                '${clubData['zip_code'] ?? 'N/A'} ${clubData['city'] ?? ''}'),
-                            FutureBuilder<double>(
-                              future: widget.club['id'] != null
-                                  ? getAverageRating(widget.club['id'])
-                                  : Future.value(0.0),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const Text("Lade Bewertung...");
-                                }
-                                final averageRating = snapshot.data ?? 0.0;
-                                return Row(
-                                  children: [
-                                    Text(averageRating.toStringAsFixed(1)),
-                                    const SizedBox(width: 8),
-                                    Row(
-                                      children: List.generate(5, (index) {
-                                        double starRating = index + 1;
-                                        double fillPercentage = 0.0;
+          : clubId == null || clubData == null
+              ? const Center(
+                  child: Text("Bisher wurde noch kein Club registriert."))
+              : Column(
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        children: [
+                          ListTile(
+                            title: Text(clubData['name'] ?? 'N/A'),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                    '${clubData['street'] ?? 'N/A'} ${clubData['house_number'] ?? ''}'),
+                                Text(
+                                    '${clubData['zip_code'] ?? 'N/A'} ${clubData['city'] ?? ''}'),
+                                FutureBuilder<double>(
+                                  future: widget.club['id'] != null
+                                      ? getAverageRating(widget.club['id'])
+                                      : Future.value(0.0),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Text("Lade Bewertung...");
+                                    }
+                                    final averageRating = snapshot.data ?? 0.0;
+                                    return Row(
+                                      children: [
+                                        Text(averageRating.toStringAsFixed(1)),
+                                        const SizedBox(width: 8),
+                                        Row(
+                                          children: List.generate(5, (index) {
+                                            double starRating = index + 1;
+                                            double fillPercentage = 0.0;
 
-                                        double remainder =
-                                            averageRating - (starRating - 1);
-                                        if (remainder >= 0.2 &&
-                                            remainder <= 0.4) {
-                                          fillPercentage = 0.4;
-                                        } else if (remainder == 0.5) {
-                                          fillPercentage = 0.5;
-                                        } else if (remainder >= 0.6 &&
-                                            remainder <= 0.8) {
-                                          fillPercentage = 0.6;
-                                        } else if (remainder >= 0.9) {
-                                          fillPercentage = 1.0;
-                                        } else if (remainder > 0) {
-                                          fillPercentage = remainder;
-                                        }
-                                        return Stack(
-                                          children: [
-                                            const Icon(Icons.star_border,
-                                                color: Colors.amber),
-                                            ClipRect(
-                                              clipper:
-                                                  StarClipper(fillPercentage),
-                                              child: const Icon(Icons.star,
-                                                  color: Colors.amber),
-                                            ),
-                                          ],
-                                        );
-                                      }),
-                                    ),
-                                    FutureBuilder<int>(
-                                      future: widget.club['id'] != null
-                                          ? getRatingCount(widget.club['id'])
-                                          : Future.value(0),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState ==
-                                            ConnectionState.waiting) {
-                                          return const Text("...");
-                                        }
-                                        final ratingCount = snapshot.data ?? 0;
-                                        return Text(
-                                            ' ($ratingCount Bewertungen)');
-                                      },
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 20),
-                            Text('Beschreibung',
-                                style:
-                                    Theme.of(context).textTheme.headlineSmall),
-                            const SizedBox(height: 8),
-                            Text(clubDescription),
-                            const SizedBox(height: 20),
-                            Text('Kommentare',
-                                style:
-                                    Theme.of(context).textTheme.headlineSmall),
-                            const SizedBox(height: 8),
-                            StreamBuilder<QuerySnapshot>(
-                              stream: clubId != null
-                                  ? FirebaseService.getComments(clubId!)
-                                  : null,
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const Text("Lade Kommentare...");
-                                }
-                                final commentsDocs = snapshot.data?.docs ?? [];
-                                if (commentsDocs.isEmpty) {
-                                  return const Padding(
-                                    padding: EdgeInsets.only(left: 0.0),
-                                    child: Text("Keine Kommentare"),
-                                  );
-                                }
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: commentsDocs.map((commentDoc) {
-                                    // Abruf des Timestamps und Formatierung des Datums
-                                    final timestamp =
-                                        commentDoc['timestamp'] as Timestamp?;
-                                    final formattedDate = timestamp != null
-                                        ? DateFormat('dd.MM.yyyy')
-                                            .format(timestamp.toDate())
-                                        : 'Unbekanntes Datum';
-
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 16.0, top: 4.0, bottom: 4.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                  commentDoc['userName'] ??
-                                                      'Anonym',
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              Text(formattedDate,
-                                                  style: TextStyle(
-                                                      color: Colors.grey,
-                                                      fontSize: 12)),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              const Text("- "),
-                                              Expanded(
-                                                child:
-                                                    Text(commentDoc['content']),
-                                              ),
-                                              if (commentDoc['userId'] ==
-                                                  currentUser?.uid)
-                                                IconButton(
-                                                  icon:
-                                                      const Icon(Icons.delete),
-                                                  onPressed: () {
-                                                    deleteComment(
-                                                        commentDoc.id);
-                                                  },
+                                            double remainder = averageRating -
+                                                (starRating - 1);
+                                            if (remainder >= 0.2 &&
+                                                remainder <= 0.4) {
+                                              fillPercentage = 0.4;
+                                            } else if (remainder == 0.5) {
+                                              fillPercentage = 0.5;
+                                            } else if (remainder >= 0.6 &&
+                                                remainder <= 0.8) {
+                                              fillPercentage = 0.6;
+                                            } else if (remainder >= 0.9) {
+                                              fillPercentage = 1.0;
+                                            } else if (remainder > 0) {
+                                              fillPercentage = remainder;
+                                            }
+                                            return Stack(
+                                              children: [
+                                                const Icon(Icons.star_border,
+                                                    color: Colors.amber),
+                                                ClipRect(
+                                                  clipper: StarClipper(
+                                                      fillPercentage),
+                                                  child: const Icon(Icons.star,
+                                                      color: Colors.amber),
                                                 ),
+                                              ],
+                                            );
+                                          }),
+                                        ),
+                                        FutureBuilder<int>(
+                                          future: widget.club['id'] != null
+                                              ? getRatingCount(
+                                                  widget.club['id'])
+                                              : Future.value(0),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState ==
+                                                ConnectionState.waiting) {
+                                              return const Text("...");
+                                            }
+                                            final ratingCount =
+                                                snapshot.data ?? 0;
+                                            return Text(
+                                                ' ($ratingCount Bewertungen)');
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                Text('Beschreibung',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall),
+                                const SizedBox(height: 8),
+                                Text(clubDescription),
+                                const SizedBox(height: 20),
+                                Text('Kommentare',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall),
+                                const SizedBox(height: 8),
+                                StreamBuilder<QuerySnapshot>(
+                                  stream: clubId != null
+                                      ? FirebaseService.getComments(clubId!)
+                                      : null,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Text("Lade Kommentare...");
+                                    }
+                                    final commentsDocs =
+                                        snapshot.data?.docs ?? [];
+                                    if (commentsDocs.isEmpty) {
+                                      return const Padding(
+                                        padding: EdgeInsets.only(left: 0.0),
+                                        child: Text("Keine Kommentare"),
+                                      );
+                                    }
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: commentsDocs.map((commentDoc) {
+                                        // Abruf des Timestamps und Formatierung des Datums
+                                        final timestamp =
+                                            commentDoc['timestamp']
+                                                as Timestamp?;
+                                        final formattedDate = timestamp != null
+                                            ? DateFormat('dd.MM.yyyy')
+                                                .format(timestamp.toDate())
+                                            : 'Unbekanntes Datum';
+
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 16.0,
+                                              top: 4.0,
+                                              bottom: 4.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                      commentDoc['userName'] ??
+                                                          'Anonym',
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                  Text(formattedDate,
+                                                      style: TextStyle(
+                                                          color: Colors.grey,
+                                                          fontSize: 12)),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  const Text("- "),
+                                                  Expanded(
+                                                    child: Text(
+                                                        commentDoc['content']),
+                                                  ),
+                                                  if (commentDoc['userId'] ==
+                                                      currentUser?.uid)
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                          Icons.delete),
+                                                      onPressed: () {
+                                                        deleteComment(
+                                                            commentDoc.id);
+                                                      },
+                                                    ),
+                                                ],
+                                              ),
                                             ],
                                           ),
-                                        ],
-                                      ),
+                                        );
+                                      }).toList(),
                                     );
-                                  }).toList(),
-                                );
-                              },
+                                  },
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _commentController,
-                          decoration: const InputDecoration(
-                            hintText: 'Neuen Kommentar hinzufügen',
-                            border: OutlineInputBorder(),
                           ),
-                        ),
+                        ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.send),
-                        onPressed: addComment,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _commentController,
+                              decoration: const InputDecoration(
+                                hintText: 'Neuen Kommentar hinzufügen',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.send),
+                            onPressed: addComment,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
     );
   }
 

@@ -296,7 +296,14 @@ class _CustomerPageState extends State<CustomerPage> {
             if (isLoading)
               const Center(child: CircularProgressIndicator())
             else if (clubs.isEmpty)
-              const Center(child: Text("Keine Clubs gefunden."))
+              const Center(
+                child: Text(
+                  "Keine Clubs gefunden.",
+                  style: TextStyle(
+                    fontSize: 16.0, // Ändere die Schriftgröße hier
+                  ),
+                ),
+              )
             else
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
