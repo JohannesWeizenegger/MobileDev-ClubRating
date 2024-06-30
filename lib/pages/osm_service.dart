@@ -51,7 +51,8 @@ class OSMService {
     return null;
   }
 
-  static Future<bool> validateAddress(String street, String houseNumber, String zipCode, String city) async {
+  static Future<bool> validateAddress(
+      String street, String houseNumber, String zipCode, String city) async {
     final String query = [
       if (houseNumber.isNotEmpty) houseNumber,
       if (street.isNotEmpty) street,
@@ -59,7 +60,8 @@ class OSMService {
       if (zipCode.isNotEmpty) zipCode,
     ].join(', ');
 
-    final url = Uri.parse('https://nominatim.openstreetmap.org/search?q=$query&format=json');
+    final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/search?q=$query&format=json');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -70,9 +72,12 @@ class OSMService {
     }
   }
 
-  static double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+  static double calculateDistance(
+      double lat1, double lon1, double lat2, double lon2) {
     const double p = 0.017453292519943295;
-    double a = 0.5 - cos((lat2 - lat1) * p) / 2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
+    double a = 0.5 -
+        cos((lat2 - lat1) * p) / 2 +
+        cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
     return 12742 * asin(sqrt(a));
   }
 }

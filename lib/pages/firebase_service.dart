@@ -25,19 +25,33 @@ class FirebaseService {
 
     final String userId = user.uid;
 
+    // Überprüfen ob der Benutzer bereits einen Club registriert hat
+    final QuerySnapshot existingClubs = await FirebaseFirestore.instance
+        .collection('club')
+        .where('owner_id', isEqualTo: userId)
+        .limit(1)
+        .get();
+
+    if (existingClubs.docs.isNotEmpty) {
+      throw Exception('Sie haben bereits einen Club registriert.');
+    }
+
     if (selectedImage == null) {
       throw Exception('Bitte wählen Sie ein Bild aus');
     }
 
-    final String uniqueFileName = DateTime.now().millisecondsSinceEpoch.toString();
+    final String uniqueFileName =
+        DateTime.now().millisecondsSinceEpoch.toString();
     final Reference referenceRoot = FirebaseStorage.instance.ref();
     final Reference referenceDirImages = referenceRoot.child('images');
-    final Reference referenceImageToUpload = referenceDirImages.child(uniqueFileName);
+    final Reference referenceImageToUpload =
+        referenceDirImages.child(uniqueFileName);
 
     await referenceImageToUpload.putFile(selectedImage);
     final String imageUrl = await referenceImageToUpload.getDownloadURL();
 
-    final coordinates = await OSMService.getCoordinates(clubStreet, clubHouseNumber, clubZipCode, clubCity);
+    final coordinates = await OSMService.getCoordinates(
+        clubStreet, clubHouseNumber, clubZipCode, clubCity);
 
     if (coordinates == null) {
       throw Exception('Ungültige Adresse');
@@ -66,7 +80,8 @@ class FirebaseService {
     });
 
     // Erstelle einen neuen Eintrag in der Sammlung owners und erhalte die Dokument-ID
-    DocumentReference ownerRef = FirebaseFirestore.instance.collection('owner').doc(userId);
+    DocumentReference ownerRef =
+        FirebaseFirestore.instance.collection('owner').doc(userId);
     await ownerRef.set({
       'name': ownerName,
       'street': ownerStreet,
@@ -88,5 +103,59 @@ class FirebaseService {
       'longitude': longitude,
       'timestamp': FieldValue.serverTimestamp(),
     });
+  }
+
+  // Kommentar hinzufügen
+  static Future<void> addComment(String clubId, String commentContent) async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('User ist nicht eingeloggt');
+    }
+
+    await FirebaseFirestore.instance
+        .collection('club')
+        .doc(clubId)
+        .collection('comments')
+        .add({
+      'content': commentContent,
+      'userId': user.uid,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // Kommentare auslesen
+  static Stream<QuerySnapshot> getComments(String clubId) {
+    return FirebaseFirestore.instance
+        .collection('club')
+        .doc(clubId)
+        .collection('comments')
+        .orderBy('timestamp', descending: true)
+        .snapshots();
+  }
+
+  static Stream<QuerySnapshot> getClubDescription(String clubId) {
+    return FirebaseFirestore.instance
+        .collection('club')
+        .doc(clubId)
+        .collection('description')
+        .snapshots();
+  }
+
+  // Kommentar löschen
+  static Future<void> deleteComment(String clubId, String commentId) async {
+    await FirebaseFirestore.instance
+        .collection('club')
+        .doc(clubId)
+        .collection('comments')
+        .doc(commentId)
+        .delete();
+  }
+
+  static Future<void> addOrUpdateDescription(
+      String clubId, String description) async {
+    await FirebaseFirestore.instance
+        .collection('club')
+        .doc(clubId)
+        .update({'description': description});
   }
 }

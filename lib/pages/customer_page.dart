@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'osm_service.dart';
+import 'club_detail_page.dart'; // Importiere die neue Seite
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -169,7 +170,8 @@ class _CustomerPageState extends State<CustomerPage> {
     double? searchLongitude;
 
     if (locationQuery != null && locationQuery.isNotEmpty) {
-      final coordinates = await OSMService.getCoordinates("", "", locationQuery, "");
+      final coordinates =
+          await OSMService.getCoordinates("", "", locationQuery, "");
       if (coordinates != null) {
         searchLatitude = coordinates['lat'];
         searchLongitude = coordinates['lon'];
@@ -186,13 +188,17 @@ class _CustomerPageState extends State<CustomerPage> {
       var ratingCount = await getRatingCount(club.id);
       var userRating = await getUserRating(club.id);
 
-      bool matchesName = nameQuery.isEmpty || (clubData['name'] as String).toLowerCase().contains(nameQuery);
+      bool matchesName = nameQuery.isEmpty ||
+          (clubData['name'] as String).toLowerCase().contains(nameQuery);
       bool matchesDistance = true;
 
-      if (_maxDistance != null && searchLatitude != null && searchLongitude != null) {
+      if (_maxDistance != null &&
+          searchLatitude != null &&
+          searchLongitude != null) {
         double clubLatitude = clubData['latitude'];
         double clubLongitude = clubData['longitude'];
-        double distance = OSMService.calculateDistance(searchLatitude, searchLongitude, clubLatitude, clubLongitude);
+        double distance = OSMService.calculateDistance(
+            searchLatitude, searchLongitude, clubLatitude, clubLongitude);
         matchesDistance = distance <= _maxDistance!;
       }
 
@@ -299,7 +305,7 @@ class _CustomerPageState extends State<CustomerPage> {
               const Center(child: Text("Keine Clubs gefunden."))
             else
               ListView.builder(
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: clubs.length,
                 itemBuilder: (context, index) {
@@ -311,8 +317,10 @@ class _CustomerPageState extends State<CustomerPage> {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('${club['data']['street'] ?? 'N/A'} ${club['data']['house_number'] ?? ''}'),
-                        Text('${club['data']['zip_code'] ?? 'N/A'} ${club['data']['city'] ?? ''}'),
+                        Text(
+                            '${club['data']['street'] ?? 'N/A'} ${club['data']['house_number'] ?? ''}'),
+                        Text(
+                            '${club['data']['zip_code'] ?? 'N/A'} ${club['data']['city'] ?? ''}'),
                         Row(
                           children: [
                             Text('${club['avgRating'].toStringAsFixed(1)}'),
@@ -322,12 +330,14 @@ class _CustomerPageState extends State<CustomerPage> {
                                 double starRating = index + 1;
                                 double fillPercentage = 0.0;
 
-                                double remainder = club['avgRating'] - (starRating - 1);
+                                double remainder =
+                                    club['avgRating'] - (starRating - 1);
                                 if (remainder >= 0.2 && remainder <= 0.4) {
                                   fillPercentage = 0.4;
                                 } else if (remainder == 0.5) {
                                   fillPercentage = 0.5;
-                                } else if (remainder >= 0.6 && remainder <= 0.8) {
+                                } else if (remainder >= 0.6 &&
+                                    remainder <= 0.8) {
                                   fillPercentage = 0.6;
                                 } else if (remainder >= 0.9) {
                                   fillPercentage = 1.0;
@@ -336,13 +346,13 @@ class _CustomerPageState extends State<CustomerPage> {
                                 }
                                 return Stack(
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.star_border,
                                       color: Colors.amber,
                                     ),
                                     ClipRect(
                                       clipper: StarClipper(fillPercentage),
-                                      child: Icon(
+                                      child: const Icon(
                                         Icons.star,
                                         color: Colors.amber,
                                       ),
@@ -356,12 +366,13 @@ class _CustomerPageState extends State<CustomerPage> {
                         ),
                         Row(
                           children: [
-                            Expanded(
-                                child: const Text('Bewertung: ')),
+                            Expanded(child: const Text('Bewertung: ')),
                             for (int i = 1; i <= 5; i++)
                               IconButton(
                                 icon: Icon(
-                                  i <= (userRating ?? 0) ? Icons.star : Icons.star_border,
+                                  i <= (userRating ?? 0)
+                                      ? Icons.star
+                                      : Icons.star_border,
                                   color: Colors.amber,
                                 ),
                                 onPressed: () {
@@ -373,7 +384,9 @@ class _CustomerPageState extends State<CustomerPage> {
                       ],
                     ),
                     onTap: () {
-                      // Hier könntest du eine Detailseite aufrufen oder weitere Aktionen durchführen
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ClubDetailPage(club: club),
+                      ));
                     },
                   );
                 },
@@ -466,7 +479,8 @@ class _LocationDialogState extends State<LocationDialog> {
           ElevatedButton(
             onPressed: () async {
               String locationName = _locationController.text;
-              final valid = await OSMService.validateAddress("", "", locationName, "");
+              final valid =
+                  await OSMService.validateAddress("", "", locationName, "");
               if (!valid) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Ungültige Adresse")),
@@ -474,7 +488,8 @@ class _LocationDialogState extends State<LocationDialog> {
                 return;
               }
               if (locationName.isNotEmpty) {
-                final place = await OSMService.getPlaceFromCoordinates(locationName);
+                final place =
+                    await OSMService.getPlaceFromCoordinates(locationName);
                 locationName = place ?? locationName;
               }
               Navigator.pop(context, {

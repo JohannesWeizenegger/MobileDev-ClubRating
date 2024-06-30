@@ -63,8 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '734874580425',
     projectId: 'cannaclubrating',
     storageBucket: 'cannaclubrating.appspot.com',
-    iosClientId: '734874580425-5g52ohl2g6krgus7olma1riafu75c6kl.apps.googleusercontent.com',
+    iosClientId:
+        '734874580425-5g52ohl2g6krgus7olma1riafu75c6kl.apps.googleusercontent.com',
     iosBundleId: 'com.example.cannaClubRating',
   );
-
 }
