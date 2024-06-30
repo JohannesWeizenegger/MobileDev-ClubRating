@@ -1,8 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'osm_service.dart';
-import 'club_detail_page.dart'; // Importiere die neue Seite
+import 'club_detail_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +29,9 @@ class CustomerPage extends StatefulWidget {
 
 class _CustomerPageState extends State<CustomerPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String userId = "exampleUserId";
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? currentUser;
+  late String userId;
   late List<Map<String, dynamic>> clubs = [];
   bool isLoading = true;
 
@@ -42,6 +45,7 @@ class _CustomerPageState extends State<CustomerPage> {
     super.initState();
     fetchAllClubData();
     _loadSavedLocation();
+    currentUser = _auth.currentUser;
   }
 
   Future<void> saveOrUpdateRating(String clubId, int rating) async {
@@ -49,7 +53,7 @@ class _CustomerPageState extends State<CustomerPage> {
         .collection('club')
         .doc(clubId)
         .collection('ratings')
-        .where('userId', isEqualTo: userId)
+        .where('userId', isEqualTo: currentUser?.uid)
         .limit(1)
         .get();
 
@@ -60,7 +64,7 @@ class _CustomerPageState extends State<CustomerPage> {
           .collection('ratings')
           .add({
         'rating': rating,
-        'userId': userId,
+        'userId': currentUser?.uid,
         'timestamp': FieldValue.serverTimestamp(),
       });
     } else {
@@ -107,7 +111,7 @@ class _CustomerPageState extends State<CustomerPage> {
         .collection('club')
         .doc(clubId)
         .collection('ratings')
-        .where('userId', isEqualTo: userId)
+        .where('userId', isEqualTo: currentUser?.uid)
         .limit(1)
         .get();
 
@@ -143,16 +147,6 @@ class _CustomerPageState extends State<CustomerPage> {
   }
 
   Future<void> _loadSavedLocation() async {
-    // Load saved location and radius from local storage or Firebase
-    // For example purposes, let's assume they are saved in shared preferences
-
-    // final prefs = await SharedPreferences.getInstance();
-    // setState(() {
-    //   _locationQuery = prefs.getString('locationQuery');
-    //   _maxDistance = prefs.getDouble('maxDistance');
-    // });
-
-    // For simplicity, let's assume there are no saved values:
     setState(() {
       _locationQuery = null;
       _maxDistance = null;
