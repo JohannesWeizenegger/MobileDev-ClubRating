@@ -31,7 +31,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void checkAlreadyRegistered() async{
+  void checkAlreadyRegistered() async {
     if (_user != null) {
       final String userId = _user!.uid;
       final QuerySnapshot userClubDocs = await FirebaseFirestore.instance
@@ -43,5 +43,13 @@ class AppState extends ChangeNotifier {
     } else {
       setAlreadyRegistered(false);
     }
+  }
+
+  void goToClubPage() {
+    setIndex(1);  // Navigiere zu ClubPage
+  }
+
+  void goToRegisteredClubPage() {
+    setIndex(1);  // Navigiere zu RegisteredClubPage
   }
 }

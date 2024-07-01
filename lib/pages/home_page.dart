@@ -18,11 +18,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final List<Widget> _pages = [
-    const CustomerPage(),
-    const CircularProgressIndicator(),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -45,23 +40,27 @@ class _HomePageState extends State<HomePage> {
 
     final appState = Provider.of<AppState>(context, listen: false);
     appState.setAlreadyRegistered(userClubDocs.docs.isNotEmpty);
-    if (userClubDocs.docs.isNotEmpty) {
-      setState(() {
-        _pages[1] = const RegisteredClubPage();
-      });
-    } else {
-      setState(() {
-        _pages[1] = const ClubPage();
-      });
-    }
+    appState.setIndex(0); // Gehe zu CustomerPage nach Überprüfung des Registrierungsstatus
   }
 
   @override
   Widget build(BuildContext context) {
     final appState = Provider.of<AppState>(context);
 
+    final List<Widget> pages = [
+      const CustomerPage(),
+      if (appState.alreadyRegistered) const RegisteredClubPage() else const ClubPage(),
+    ];
+
+    // Sicherstellen, dass currentIndex im gültigen Bereich liegt
+    int currentIndex = appState.currentIndex;
+    if (currentIndex < 0 || currentIndex >= pages.length) {
+      currentIndex = 0;
+      appState.setIndex(0);
+    }
+
     return Scaffold(
-      body: appState.user != null ? _buildMainContent(appState) : _googleSignInButton(),
+      body: appState.user != null ? _buildMainContent(appState, pages) : _googleSignInButton(),
     );
   }
 
@@ -78,13 +77,21 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMainContent(AppState appState) {
+  Widget _buildMainContent(AppState appState, List<Widget> pages) {
     return Scaffold(
-      body: _pages[appState.currentIndex],
+      body: pages[appState.currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: appState.currentIndex,
         onTap: (index) {
-          appState.setIndex(index);
+          if (index == 1) {
+            if (appState.alreadyRegistered) {
+              appState.goToRegisteredClubPage();
+            } else {
+              appState.goToClubPage();
+            }
+          } else {
+            appState.setIndex(index);
+          }
         },
         items: [
           const BottomNavigationBarItem(

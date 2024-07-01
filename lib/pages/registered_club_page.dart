@@ -102,10 +102,11 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                         actions: <Widget>[
                           TextButton(
                             child: const Text('OK'),
-                            onPressed: () {
+                            onPressed: () async {
                               Navigator.of(context).pop();
-                              Provider.of<AppState>(context, listen: false).setIndex(0);
-                              Provider.of<AppState>(context, listen: false).checkAlreadyRegistered();
+                              final appState = Provider.of<AppState>(context, listen: false);
+                              appState.checkAlreadyRegistered();
+                              appState.setIndex(0);
                             },
                           ),
                         ],
