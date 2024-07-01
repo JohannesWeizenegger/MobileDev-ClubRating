@@ -24,6 +24,8 @@
 
     image_picker: ^1.1.2
     provider: ^6.1.2
+    flutter_native_splash: ^2.4.0
+
 
   dev_dependencies:
     flutter_test:
@@ -34,5 +36,28 @@
   dependency_overrides:
     vm_service: 14.2.1
 
+
   flutter:
     uses-material-design: true
+
+    assets:
+        - assets/images/
+
+
+  flutter_icons:
+    android: true
+    ios: true
+    image_path: "assets/images/app_icon.png"
+
+
+  flutter_native_splash:
+    android: true
+    ios: true
+    color: "#000000"
+    image: assets/images/splash.png
+
+    android_12:
+      image: assets/images/splash.png
+      color: "#000000"
+      icon_background_color: "#ffffff"
+      icon_background_color_dark: "#121212"
