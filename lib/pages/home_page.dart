@@ -1,13 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:sign_in_button/sign_in_button.dart';
 import 'customer_page.dart';
 import 'club_page.dart';
 import 'registered_club_page.dart';
+import 'package:sign_in_button/sign_in_button.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final int initialIndex;
+  const HomePage({Key? key, this.initialIndex = 0}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -18,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   User? _user;
   bool _alreadyRegistered = false;
 
-  int _currentIndex = 0;
+  late int _currentIndex;
   final List<Widget> _pages = [
     const CustomerPage(),
     const CircularProgressIndicator(), // Placeholder while checking registration
@@ -27,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
     _auth.authStateChanges().listen((event) {
       setState(() {
         _user = event;
@@ -35,27 +37,33 @@ class _HomePageState extends State<HomePage> {
         }
       });
     });
+
+    // Setze den Index basierend auf den empfangenen Argumenten
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is int) {
+        setState(() {
+          _currentIndex = arguments;
+        });
+      }
+    });
   }
 
   Future<void> _checkRegistrationStatus() async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final String userId = user.uid;
-      final DocumentSnapshot ownerDoc = await FirebaseFirestore.instance
-          .collection('owner')
-          .doc(userId)
+      final QuerySnapshot userClubDocs = await FirebaseFirestore.instance
+          .collection('club')
+          .where('owner_id', isEqualTo: userId)
           .get();
 
       setState(() {
-        _alreadyRegistered = ownerDoc.exists;
+        _alreadyRegistered = userClubDocs.docs.isNotEmpty;
         if (_alreadyRegistered) {
           _pages[1] = const RegisteredClubPage();
-          _currentIndex =
-          1; // Ensure we stay on the correct page after updating
         } else {
           _pages[1] = const ClubPage();
-          _currentIndex =
-          1; // Ensure we stay on the correct page after updating
         }
       });
     }

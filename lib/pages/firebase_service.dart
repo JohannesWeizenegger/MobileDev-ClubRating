@@ -161,4 +161,36 @@ class FirebaseService {
       'description': newContent.trim(),
     });
   }
+
+//lösche CLub
+  static Future<void> deleteClub(String clubId) async {
+    // Lösche alle Unterkollektionen (z.B. comments, ratings)
+    final commentsSnapshot = await FirebaseFirestore.instance
+        .collection('club')
+        .doc(clubId)
+        .collection('comments')
+        .get();
+    for (DocumentSnapshot doc in commentsSnapshot.docs) {
+      await doc.reference.delete();
+    }
+
+    final ratingsSnapshot = await FirebaseFirestore.instance
+        .collection('club')
+        .doc(clubId)
+        .collection('ratings')
+        .get();
+    for (DocumentSnapshot doc in ratingsSnapshot.docs) {
+      await doc.reference.delete();
+    }
+
+    // Lösche das Club-Dokument
+    await FirebaseFirestore.instance.collection('club').doc(clubId).delete();
+
+    final User? user = FirebaseAuth.instance.currentUser;
+    // Lösche das Owner und newClubRequest-Dokument
+    if (user != null) {
+      await FirebaseFirestore.instance.collection('owner').doc(user.uid).delete();
+      await FirebaseFirestore.instance.collection('newClubRequests').doc(user.uid).delete();
+    }
+  }
 }

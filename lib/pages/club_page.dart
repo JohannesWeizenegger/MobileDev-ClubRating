@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
-import '/pages/osm_service.dart';
-import '/pages/firebase_service.dart';
+import 'osm_service.dart';
+import 'firebase_service.dart';
+import 'home_page.dart';
 
 class ClubPage extends StatefulWidget {
   const ClubPage({Key? key}) : super(key: key);
@@ -34,7 +35,7 @@ class _ClubPageState extends State<ClubPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Verkäufer"),
+        title: const Text("Club Registrierung"),
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -290,10 +291,12 @@ class _ClubPageState extends State<ClubPage> {
     setState(() {
       _isClubAddressValid = isClubAddressValid;
       _isOwnerAddressValid = isOwnerAddressValid;
-      isLoading = false;
     });
 
     if (!isClubAddressValid || !isOwnerAddressValid) {
+      setState(() {
+        isLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Eine oder mehrere Adressen sind ungültig')),
       );
@@ -327,20 +330,44 @@ class _ClubPageState extends State<ClubPage> {
         _ownerZipCodeController.clear();
         _ownerCityController.clear();
         _selectedImage = null;
+        isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Daten erfolgreich gespeichert')),
+      // Zeige die Erfolgsmeldung an
+      await showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Erfolg'),
+            content: const Text('Ihre Anfrage zur Registrierung wurde erfolgreich übermittelt'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
       );
+
+      // Navigate to HomePage and set the index to 0 (Customer Page)
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => HomePage(),
+          settings: RouteSettings(arguments: 1),
+        ),
+      );
+
     } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Fehler beim Speichern: $error')),
       );
     }
-
-    setState(() {
-      isLoading = false;
-    });
   }
 
   @override
