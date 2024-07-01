@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'firebase_service.dart';
-import 'home_page.dart';
+import 'package:provider/provider.dart';
+import 'navigation_provider.dart';
 
 class RegisteredClubPage extends StatefulWidget {
   const RegisteredClubPage({Key? key}) : super(key: key);
@@ -53,133 +54,11 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
     }
   }
 
-  Future<double> getAverageRating(String clubId) async {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection('club')
-        .doc(clubId)
-        .collection('ratings')
-        .get();
-
-    if (snapshot.docs.isEmpty) {
-      return 0.0;
-    }
-    int total = snapshot.docs
-        .map((doc) => doc['rating'] as int)
-        .fold(0, (a, b) => a + b);
-    return total / snapshot.docs.length;
-  }
-
-  Future<int> getRatingCount(String clubId) async {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection('club')
-        .doc(clubId)
-        .collection('ratings')
-        .get();
-    return snapshot.docs.length;
-  }
-
-  Future<int?> getUserRating(String clubId) async {
-    User? user = currentUser;
-    if (user == null) return null;
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection('club')
-        .doc(clubId)
-        .collection('ratings')
-        .where('userId', isEqualTo: user.uid)
-        .limit(1)
-        .get();
-
-    if (snapshot.docs.isEmpty) {
-      return null;
-    }
-    return snapshot.docs.first['rating'] as int?;
-  }
-
-  void saveOrUpdateRating(String clubId, int rating) async {
-    User? user = currentUser;
-    if (user == null) return;
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
-        .collection('club')
-        .doc(clubId)
-        .collection('ratings')
-        .where('userId', isEqualTo: user.uid)
-        .limit(1)
-        .get();
-
-    if (snapshot.docs.isEmpty) {
-      await FirebaseFirestore.instance
-          .collection('club')
-          .doc(clubId)
-          .collection('ratings')
-          .add({
-        'rating': rating,
-        'userId': user.uid,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-    } else {
-      DocumentReference ratingDoc = snapshot.docs.first.reference;
-      await ratingDoc.update({
-        'rating': rating,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-    }
-
-    setState(() {});
-    await fetchClubData();
-    setState(() {});
-  }
-
-  Future<void> showEditDescriptionDialog(
-      String descriptionId, String descriptionContent) async {
-    _editDescriptionController =
-        TextEditingController(text: descriptionContent);
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Beschreibung bearbeiten'),
-          content: TextField(
-            controller: _editDescriptionController,
-            maxLines: null,
-            decoration: const InputDecoration(
-              hintText: 'Beschreibung bearbeiten',
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Abbrechen'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Speichern'),
-              onPressed: () async {
-                await FirebaseService.updateDescription(
-                    _editDescriptionController.text, clubId!);
-                // Update the local state as well
-                setState(() {
-                  clubData?['description'] = _editDescriptionController.text;
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> addOrUpdateDescription(String clubId, String description) async {
-    await FirebaseFirestore.instance.collection('club').doc(clubId).update({
-      'description': description,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
-
-    // Lokale Daten aktualisieren
-    setState(() {
-      clubData?['description'] = description;
-    });
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    _editDescriptionController.dispose();
+    super.dispose();
   }
 
   Future<void> deleteDescription(String clubId) async {
@@ -188,7 +67,6 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
-    // Lokale Daten aktualisieren
     setState(() {
       clubData?['description'] = '';
     });
@@ -215,7 +93,6 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                   await FirebaseService.deleteClub(clubId!);
                   Navigator.of(context).pop(); // Schließen des Dialogs
 
-                  // Zeige die Erfolgsmeldung an
                   await showDialog<void>(
                     context: context,
                     builder: (BuildContext context) {
@@ -227,7 +104,8 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                             child: const Text('OK'),
                             onPressed: () {
                               Navigator.of(context).pop();
-                              _navigateToHomePage(context);
+                              Provider.of<AppState>(context, listen: false).setIndex(0);
+                              Provider.of<AppState>(context, listen: false).checkAlreadyRegistered();
                             },
                           ),
                         ],
@@ -241,22 +119,6 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
         );
       },
     );
-  }
-
-  void _navigateToHomePage(BuildContext context) {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (context) => HomePage(initialIndex: 0),
-      ),
-          (route) => false,
-    );
-  }
-
-  @override
-  void dispose() {
-    _descriptionController.dispose();
-    _editDescriptionController.dispose();
-    super.dispose();
   }
 
   @override
@@ -281,9 +143,7 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                 Text(
                     '${clubData?['zip_code'] ?? 'N/A'} ${clubData?['city'] ?? ''}'),
                 FutureBuilder<double>(
-                  future: clubId != null
-                      ? getAverageRating(clubId!)
-                      : Future.value(0.0),
+                  future: FirebaseService.getAverageRating(clubId!),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState ==
                         ConnectionState.waiting) {
@@ -299,8 +159,8 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                             double starRating = index + 1;
                             double fillPercentage = 0.0;
 
-                            double remainder =
-                                averageRating - (starRating - 1);
+                            double remainder = averageRating -
+                                (starRating - 1);
                             if (remainder >= 0.2 &&
                                 remainder <= 0.4) {
                               fillPercentage = 0.4;
@@ -333,15 +193,14 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                           }),
                         ),
                         FutureBuilder<int>(
-                          future: clubId != null
-                              ? getRatingCount(clubId!)
-                              : Future.value(0),
+                          future: FirebaseService.getRatingCount(clubId!),
                           builder: (context, snapshot) {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Text("...");
                             }
-                            final ratingCount = snapshot.data ?? 0;
+                            final ratingCount =
+                                snapshot.data ?? 0;
                             return Text(
                                 ' ($ratingCount Bewertungen)');
                           },
@@ -351,8 +210,7 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                   },
                 ),
                 const SizedBox(
-                    height:
-                    20), // Space between ratings and description
+                    height: 20), // Space between ratings and description
                 Text('Beschreibung',
                     style: Theme.of(context).textTheme.headlineSmall),
                 FutureBuilder<DocumentSnapshot>(
@@ -387,10 +245,12 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                             IconButton(
                               icon: const Icon(Icons.send),
                               onPressed: () {
-                                addOrUpdateDescription(
-                                    clubId!,
-                                    _descriptionController
-                                        .text); // Verwende die neue Methode
+                                FirebaseService.updateDescription(
+                                    _descriptionController.text, clubId!);
+                                setState(() {
+                                  clubData?['description'] =
+                                      _descriptionController.text;
+                                });
                               },
                             ),
                           ],
@@ -411,8 +271,41 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                             onPressed: () {
                               _descriptionController.text =
                                   description;
-                              showEditDescriptionDialog(
-                                  clubId!, description);
+                              showDialog<void>(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Beschreibung bearbeiten'),
+                                    content: TextField(
+                                      controller: _editDescriptionController,
+                                      maxLines: null,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Beschreibung bearbeiten',
+                                      ),
+                                    ),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: const Text('Abbrechen'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Text('Speichern'),
+                                        onPressed: () async {
+                                          await FirebaseService.updateDescription(
+                                              _editDescriptionController.text, clubId!);
+                                          setState(() {
+                                            clubData?['description'] =
+                                                _editDescriptionController.text;
+                                          });
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                             },
                           ),
                           IconButton(
@@ -428,8 +321,7 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                   },
                 ),
                 const SizedBox(
-                    height:
-                    20), // Space between description and comments section
+                    height: 20), // Space between description and comments section
                 Text('Kommentare',
                     style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(
@@ -518,10 +410,9 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
             child: ElevatedButton(
               onPressed: () => _confirmDeleteClub(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red
+                backgroundColor: Colors.red,
               ),
               child: const Text('Club löschen'),
-
             ),
           ),
         ],

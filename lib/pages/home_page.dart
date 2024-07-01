@@ -5,10 +5,11 @@ import 'customer_page.dart';
 import 'club_page.dart';
 import 'registered_club_page.dart';
 import 'package:sign_in_button/sign_in_button.dart';
+import 'package:provider/provider.dart';
+import 'navigation_provider.dart';
 
 class HomePage extends StatefulWidget {
-  final int initialIndex;
-  const HomePage({Key? key, this.initialIndex = 0}) : super(key: key);
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -16,63 +17,51 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  User? _user;
-  bool _alreadyRegistered = false;
 
-  late int _currentIndex;
   final List<Widget> _pages = [
     const CustomerPage(),
-    const CircularProgressIndicator(), // Placeholder while checking registration
+    const CircularProgressIndicator(),
   ];
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex;
     _auth.authStateChanges().listen((event) {
-      setState(() {
-        _user = event;
-        if (_user != null) {
-          _checkRegistrationStatus();
-        }
-      });
-    });
-
-    // Setze den Index basierend auf den empfangenen Argumenten
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final arguments = ModalRoute.of(context)?.settings.arguments;
-      if (arguments != null && arguments is int) {
-        setState(() {
-          _currentIndex = arguments;
-        });
+      if (event != null) {
+        Provider.of<AppState>(context, listen: false).setUser(event);
+        _checkRegistrationStatus(event);
+      } else {
+        Provider.of<AppState>(context, listen: false).clearUser();
       }
     });
   }
 
-  Future<void> _checkRegistrationStatus() async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final String userId = user.uid;
-      final QuerySnapshot userClubDocs = await FirebaseFirestore.instance
-          .collection('club')
-          .where('owner_id', isEqualTo: userId)
-          .get();
+  Future<void> _checkRegistrationStatus(User user) async {
+    final String userId = user.uid;
+    final QuerySnapshot userClubDocs = await FirebaseFirestore.instance
+        .collection('club')
+        .where('owner_id', isEqualTo: userId)
+        .get();
 
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.setAlreadyRegistered(userClubDocs.docs.isNotEmpty);
+    if (userClubDocs.docs.isNotEmpty) {
       setState(() {
-        _alreadyRegistered = userClubDocs.docs.isNotEmpty;
-        if (_alreadyRegistered) {
-          _pages[1] = const RegisteredClubPage();
-        } else {
-          _pages[1] = const ClubPage();
-        }
+        _pages[1] = const RegisteredClubPage();
+      });
+    } else {
+      setState(() {
+        _pages[1] = const ClubPage();
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context);
+
     return Scaffold(
-      body: _user != null ? _buildMainContent() : _googleSignInButton(),
+      body: appState.user != null ? _buildMainContent(appState) : _googleSignInButton(),
     );
   }
 
@@ -89,22 +78,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMainContent() {
+  Widget _buildMainContent(AppState appState) {
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: _pages[appState.currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) async {
-          setState(() {
-            _currentIndex = index;
-          });
+        currentIndex: appState.currentIndex,
+        onTap: (index) {
+          appState.setIndex(index);
         },
         items: [
           const BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: 'Clubs finden',
           ),
-          if (_alreadyRegistered)
+          if (appState.alreadyRegistered)
             const BottomNavigationBarItem(
               icon: Icon(Icons.nature_people),
               label: 'Mein Club',

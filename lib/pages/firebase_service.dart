@@ -25,7 +25,6 @@ class FirebaseService {
 
     final String userId = user.uid;
 
-    // Überprüfen ob der Benutzer bereits einen Club registriert hat
     final QuerySnapshot existingClubs = await FirebaseFirestore.instance
         .collection('club')
         .where('owner_id', isEqualTo: userId)
@@ -41,11 +40,11 @@ class FirebaseService {
     }
 
     final String uniqueFileName =
-        DateTime.now().millisecondsSinceEpoch.toString();
+    DateTime.now().millisecondsSinceEpoch.toString();
     final Reference referenceRoot = FirebaseStorage.instance.ref();
     final Reference referenceDirImages = referenceRoot.child('images');
     final Reference referenceImageToUpload =
-        referenceDirImages.child(uniqueFileName);
+    referenceDirImages.child(uniqueFileName);
 
     await referenceImageToUpload.putFile(selectedImage);
     final String imageUrl = await referenceImageToUpload.getDownloadURL();
@@ -60,7 +59,6 @@ class FirebaseService {
     final double latitude = coordinates['lat']!;
     final double longitude = coordinates['lon']!;
 
-    // Speichere die Daten in der Sammlung newClubRequests
     await FirebaseFirestore.instance
         .collection('newClubRequests')
         .doc(userId)
@@ -79,9 +77,8 @@ class FirebaseService {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
-    // Erstelle einen neuen Eintrag in der Sammlung owners und erhalte die Dokument-ID
     DocumentReference ownerRef =
-        FirebaseFirestore.instance.collection('owner').doc(userId);
+    FirebaseFirestore.instance.collection('owner').doc(userId);
     await ownerRef.set({
       'name': ownerName,
       'street': ownerStreet,
@@ -91,21 +88,19 @@ class FirebaseService {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
-    // Speichere die Daten in der Sammlung clubs mit einer Referenz zum Owner
     await FirebaseFirestore.instance.collection('club').add({
       'name': clubName,
       'street': clubStreet,
       'house_number': clubHouseNumber,
       'zip_code': clubZipCode,
       'city': clubCity,
-      'owner_id': userId, // Referenz auf den Owner
+      'owner_id': userId,
       'latitude': latitude,
       'longitude': longitude,
       'timestamp': FieldValue.serverTimestamp(),
     });
   }
 
-  // Kommentar hinzufügen
   static Future<void> addComment(String clubId, String commentContent) async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -126,7 +121,6 @@ class FirebaseService {
     });
   }
 
-  // Kommentare auslesen
   static Stream<QuerySnapshot> getComments(String clubId) {
     return FirebaseFirestore.instance
         .collection('club')
@@ -136,15 +130,6 @@ class FirebaseService {
         .snapshots();
   }
 
-  static Stream<QuerySnapshot> getClubDescription(String clubId) {
-    return FirebaseFirestore.instance
-        .collection('club')
-        .doc(clubId)
-        .collection('description')
-        .snapshots();
-  }
-
-  // Kommentar löschen
   static Future<void> deleteComment(String clubId, String commentId) async {
     await FirebaseFirestore.instance
         .collection('club')
@@ -162,9 +147,7 @@ class FirebaseService {
     });
   }
 
-//lösche CLub
   static Future<void> deleteClub(String clubId) async {
-    // Lösche alle Unterkollektionen (z.B. comments, ratings)
     final commentsSnapshot = await FirebaseFirestore.instance
         .collection('club')
         .doc(clubId)
@@ -183,14 +166,37 @@ class FirebaseService {
       await doc.reference.delete();
     }
 
-    // Lösche das Club-Dokument
     await FirebaseFirestore.instance.collection('club').doc(clubId).delete();
 
     final User? user = FirebaseAuth.instance.currentUser;
-    // Lösche das Owner und newClubRequest-Dokument
     if (user != null) {
       await FirebaseFirestore.instance.collection('owner').doc(user.uid).delete();
       await FirebaseFirestore.instance.collection('newClubRequests').doc(user.uid).delete();
     }
+  }
+
+  static Future<double> getAverageRating(String clubId) async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('club')
+        .doc(clubId)
+        .collection('ratings')
+        .get();
+
+    if (snapshot.docs.isEmpty) {
+      return 0.0;
+    }
+    int total = snapshot.docs
+        .map((doc) => doc['rating'] as int)
+        .fold(0, (a, b) => a + b);
+    return total / snapshot.docs.length;
+  }
+
+  static Future<int> getRatingCount(String clubId) async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('club')
+        .doc(clubId)
+        .collection('ratings')
+        .get();
+    return snapshot.docs.length;
   }
 }
