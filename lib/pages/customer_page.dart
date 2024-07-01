@@ -1,9 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'osm_service.dart';
 import 'club_detail_page.dart';
+import 'home_page.dart'; // Importiere die HomePage
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: CustomerPage(),
+      home: HomePage(),
     );
   }
 }
@@ -165,7 +166,7 @@ class _CustomerPageState extends State<CustomerPage> {
 
     if (locationQuery != null && locationQuery.isNotEmpty) {
       final coordinates =
-          await OSMService.getCoordinates("", "", locationQuery, "");
+      await OSMService.getCoordinates("", "", locationQuery, "");
       if (coordinates != null) {
         searchLatitude = coordinates['lat'];
         searchLongitude = coordinates['lon'];
@@ -253,6 +254,17 @@ class _CustomerPageState extends State<CustomerPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Canna-Clubs"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () {
+              _auth.signOut();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => HomePage()), // Hier die HomePage
+              );
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -481,7 +493,7 @@ class _LocationDialogState extends State<LocationDialog> {
             onPressed: () async {
               String locationName = _locationController.text;
               final valid =
-                  await OSMService.validateAddress("", "", locationName, "");
+              await OSMService.validateAddress("", "", locationName, "");
               if (!valid) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Ungültige Adresse")),
@@ -490,7 +502,7 @@ class _LocationDialogState extends State<LocationDialog> {
               }
               if (locationName.isNotEmpty) {
                 final place =
-                    await OSMService.getPlaceFromCoordinates(locationName);
+                await OSMService.getPlaceFromCoordinates(locationName);
                 locationName = place ?? locationName;
               }
               Navigator.pop(context, {

@@ -114,7 +114,7 @@ class _HomePageState extends State<HomePage> {
   void _handleGoogleSignIn() async {
     try {
       GoogleAuthProvider googleAuthProvider = GoogleAuthProvider();
-      await _auth.signInWithPopup(googleAuthProvider);
+      await _auth.signInWithProvider(googleAuthProvider);
     } catch (error) {
       print(error);
     }
