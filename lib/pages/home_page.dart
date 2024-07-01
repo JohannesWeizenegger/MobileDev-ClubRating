@@ -41,21 +41,21 @@ class _HomePageState extends State<HomePage> {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final String userId = user.uid;
-      final QuerySnapshot userClubDocs = await FirebaseFirestore.instance
-          .collection('club')
-          .where('owner_id', isEqualTo: userId)
+      final DocumentSnapshot ownerDoc = await FirebaseFirestore.instance
+          .collection('owner')
+          .doc(userId)
           .get();
 
       setState(() {
-        _alreadyRegistered = userClubDocs.docs.isNotEmpty;
+        _alreadyRegistered = ownerDoc.exists;
         if (_alreadyRegistered) {
           _pages[1] = const RegisteredClubPage();
           _currentIndex =
-              1; // Ensure we stay on the correct page after updating
+          1; // Ensure we stay on the correct page after updating
         } else {
           _pages[1] = const ClubPage();
           _currentIndex =
-              1; // Ensure we stay on the correct page after updating
+          1; // Ensure we stay on the correct page after updating
         }
       });
     }
