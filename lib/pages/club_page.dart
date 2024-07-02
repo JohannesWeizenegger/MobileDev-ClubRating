@@ -316,7 +316,7 @@ class _ClubPageState extends State<ClubPage> {
                 'Ihre Anfrage zur Registrierung wurde erfolgreich übermittelt'),
             actions: <Widget>[
               TextButton(
-                child: const Text('OK'),
+                child: const Text('OK', style: TextStyle(color: Colors.white)),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
