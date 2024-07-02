@@ -1,10 +1,9 @@
+import 'package:canna_club_rating/pages/registered_club_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'customer_page.dart';
 import 'club_page.dart';
-import 'registered_club_page.dart';
-import 'package:sign_in_button/sign_in_button.dart';
 import 'package:provider/provider.dart';
 import 'navigation_provider.dart';
 
@@ -40,7 +39,8 @@ class _HomePageState extends State<HomePage> {
 
     final appState = Provider.of<AppState>(context, listen: false);
     appState.setAlreadyRegistered(userClubDocs.docs.isNotEmpty);
-    appState.setIndex(0); // Gehe zu CustomerPage nach Überprüfung des Registrierungsstatus
+    appState.setIndex(
+        0); // Gehe zu CustomerPage nach Überprüfung des Registrierungsstatus
   }
 
   @override
@@ -49,7 +49,10 @@ class _HomePageState extends State<HomePage> {
 
     final List<Widget> pages = [
       const CustomerPage(),
-      if (appState.alreadyRegistered) const RegisteredClubPage() else const ClubPage(),
+      if (appState.alreadyRegistered)
+        const RegisteredClubPage()
+      else
+        const ClubPage(),
     ];
 
     // Sicherstellen, dass currentIndex im gültigen Bereich liegt
@@ -60,7 +63,19 @@ class _HomePageState extends State<HomePage> {
     }
 
     return Scaffold(
-      body: appState.user != null ? _buildMainContent(appState, pages) : _googleSignInButton(),
+      body: Container(
+        color: Colors.green[900], // Hintergrundfarbe des gesamten Bildschirms
+        child: Column(
+          children: [
+            Expanded(
+              child: appState.user != null
+                  ? _buildMainContent(appState, pages)
+                  : _googleSignInButton(),
+            ),
+            _buildBottomNavigationBar(appState),
+          ],
+        ),
+      ),
     );
   }
 
@@ -68,10 +83,17 @@ class _HomePageState extends State<HomePage> {
     return Center(
       child: SizedBox(
         height: 50,
-        child: SignInButton(
-          Buttons.google,
-          text: "Sign up with Google",
+        child: ElevatedButton.icon(
           onPressed: _handleGoogleSignIn,
+          icon: const Icon(Icons.login, color: Colors.green),
+          label: const Text('Mit Google anmelden',
+              style: TextStyle(color: Colors.green)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+          ),
         ),
       ),
     );
@@ -79,37 +101,53 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildMainContent(AppState appState, List<Widget> pages) {
     return Scaffold(
+      backgroundColor: Colors.green[900],
       body: pages[appState.currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: appState.currentIndex,
-        onTap: (index) {
-          if (index == 1) {
-            if (appState.alreadyRegistered) {
-              appState.goToRegisteredClubPage();
+    );
+  }
+
+  Widget _buildBottomNavigationBar(AppState appState) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: 1,
+          color: Colors.white, // Die weiße Trennlinie
+        ),
+        BottomNavigationBar(
+          backgroundColor: Colors.green[900],
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white70,
+          currentIndex: appState.currentIndex,
+          onTap: (index) {
+            if (index == 1) {
+              if (appState.alreadyRegistered) {
+                appState.goToRegisteredClubPage();
+              } else {
+                appState.goToClubPage();
+              }
             } else {
-              appState.goToClubPage();
+              appState.setIndex(index);
             }
-          } else {
-            appState.setIndex(index);
-          }
-        },
-        items: [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Clubs finden',
-          ),
-          if (appState.alreadyRegistered)
+          },
+          items: [
             const BottomNavigationBarItem(
-              icon: Icon(Icons.nature_people),
-              label: 'Mein Club',
-            )
-          else
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.add),
-              label: 'Club registrieren',
+              icon: Icon(Icons.search, color: Colors.white),
+              label: 'Clubs finden',
             ),
-        ],
-      ),
+            if (appState.alreadyRegistered)
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.nature_people, color: Colors.white),
+                label: 'Mein Club',
+              )
+            else
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.add, color: Colors.white),
+                label: 'Club registrieren',
+              ),
+          ],
+        ),
+      ],
     );
   }
 
