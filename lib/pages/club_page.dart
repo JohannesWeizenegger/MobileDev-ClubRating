@@ -17,13 +17,13 @@ class _ClubPageState extends State<ClubPage> {
   final TextEditingController _clubNameController = TextEditingController();
   final TextEditingController _clubStreetController = TextEditingController();
   final TextEditingController _clubHouseNumberController =
-      TextEditingController();
+  TextEditingController();
   final TextEditingController _clubZipCodeController = TextEditingController();
   final TextEditingController _clubCityController = TextEditingController();
   final TextEditingController _ownerNameController = TextEditingController();
   final TextEditingController _ownerStreetController = TextEditingController();
   final TextEditingController _ownerHouseNumberController =
-      TextEditingController();
+  TextEditingController();
   final TextEditingController _ownerZipCodeController = TextEditingController();
   final TextEditingController _ownerCityController = TextEditingController();
   File? _selectedImage;
@@ -44,165 +44,170 @@ class _ClubPageState extends State<ClubPage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Container(
-              color: Colors.green[900],
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    const Text(
-                      'Angaben zum Club',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(_clubNameController, "Name des Clubs"),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildTextField(
-                              _clubStreetController, "Straße",
-                              errorText: _isClubAddressValid
-                                  ? null
-                                  : 'Ungültige Adresse'),
-                        ),
-                        const SizedBox(width: 16),
-                        SizedBox(
-                          width: 80,
-                          child: _buildTextField(
-                              _clubHouseNumberController, "Hnr.",
-                              errorText: _isClubAddressValid
-                                  ? null
-                                  : 'Ungültige Adresse'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildTextField(_clubZipCodeController, "PLZ",
-                              errorText: _isClubAddressValid
-                                  ? null
-                                  : 'Ungültige Adresse'),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildTextField(_clubCityController, "Ort",
-                              errorText: _isClubAddressValid
-                                  ? null
-                                  : 'Ungültige Adresse'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Angaben zum Clubinhaber',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(_ownerNameController, "Name"),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildTextField(
-                              _ownerStreetController, "Straße",
-                              errorText: _isOwnerAddressValid
-                                  ? null
-                                  : 'Ungültige Adresse'),
-                        ),
-                        const SizedBox(width: 16),
-                        SizedBox(
-                          width: 80,
-                          child: _buildTextField(
-                              _ownerHouseNumberController, "Hnr.",
-                              errorText: _isOwnerAddressValid
-                                  ? null
-                                  : 'Ungültige Adresse'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildTextField(_ownerZipCodeController, "PLZ",
-                              errorText: _isOwnerAddressValid
-                                  ? null
-                                  : 'Ungültige Adresse'),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildTextField(_ownerCityController, "Ort",
-                              errorText: _isOwnerAddressValid
-                                  ? null
-                                  : 'Ungültige Adresse'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Zur vollständigen Registrierung benötigen wir ein Bild Ihres Personalausweises.',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white),
-                      onPressed: () => _pickImage(ImageSource.camera),
-                      icon: const Icon(Icons.camera_alt, color: Colors.green),
-                      label: const Text('Bild mit Kamera aufnehmen',
-                          style: TextStyle(color: Colors.green)),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white),
-                      onPressed: () => _pickImage(ImageSource.gallery),
-                      icon:
-                          const Icon(Icons.photo_library, color: Colors.green),
-                      label: const Text('Bild aus Galerie auswählen',
-                          style: TextStyle(color: Colors.green)),
-                    ),
-                    if (_selectedImage != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: Image.file(_selectedImage!),
-                      ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.green[800],
-                          backgroundColor: Colors.white),
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          _validateAndSaveClubData();
-                        }
-                      },
-                      child: const Text('Absenden',
-                          style: TextStyle(color: Colors.green)),
-                    ),
-                  ],
-                ),
+        color: Colors.green[900],
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              const Text(
+                'Angaben zum Club',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
-            ),
+              const SizedBox(height: 16),
+              _buildTextField(_clubNameController, "Name des Clubs"),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                        _clubStreetController, "Straße",
+                        errorText: _isClubAddressValid
+                            ? null
+                            : 'Ungültige Adresse'),
+                  ),
+                  const SizedBox(width: 16),
+                  SizedBox(
+                    width: 80,
+                    child: _buildTextField(
+                        _clubHouseNumberController, "Hnr.",
+                        keyboardType: TextInputType.number,
+                        errorText: _isClubAddressValid
+                            ? null
+                            : 'Ungültige Adresse'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(_clubZipCodeController, "PLZ",
+                        keyboardType: TextInputType.number,
+                        errorText: _isClubAddressValid
+                            ? null
+                            : 'Ungültige Adresse'),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(_clubCityController, "Ort",
+                        errorText: _isClubAddressValid
+                            ? null
+                            : 'Ungültige Adresse'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Angaben zum Clubinhaber',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(_ownerNameController, "Name"),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(
+                        _ownerStreetController, "Straße",
+                        errorText: _isOwnerAddressValid
+                            ? null
+                            : 'Ungültige Adresse'),
+                  ),
+                  const SizedBox(width: 16),
+                  SizedBox(
+                    width: 80,
+                    child: _buildTextField(
+                        _ownerHouseNumberController, "Hnr.",
+                        keyboardType: TextInputType.number,
+                        errorText: _isOwnerAddressValid
+                            ? null
+                            : 'Ungültige Adresse'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextField(_ownerZipCodeController, "PLZ",
+                        keyboardType: TextInputType.number,
+                        errorText: _isOwnerAddressValid
+                            ? null
+                            : 'Ungültige Adresse'),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextField(_ownerCityController, "Ort",
+                        errorText: _isOwnerAddressValid
+                            ? null
+                            : 'Ungültige Adresse'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Zur vollständigen Registrierung benötigen wir ein Bild Ihres Personalausweises.',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white),
+                onPressed: () => _pickImage(ImageSource.camera),
+                icon: const Icon(Icons.camera_alt, color: Colors.green),
+                label: const Text('Bild mit Kamera aufnehmen',
+                    style: TextStyle(color: Colors.green)),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white),
+                onPressed: () => _pickImage(ImageSource.gallery),
+                icon:
+                const Icon(Icons.photo_library, color: Colors.green),
+                label: const Text('Bild aus Galerie auswählen',
+                    style: TextStyle(color: Colors.green)),
+              ),
+              if (_selectedImage != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Image.file(_selectedImage!),
+                ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.green[800],
+                    backgroundColor: Colors.white),
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _validateAndSaveClubData();
+                  }
+                },
+                child: const Text('Absenden',
+                    style: TextStyle(color: Colors.green)),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildTextField(TextEditingController controller, String labelText,
-      {String? errorText}) {
+      {TextInputType keyboardType = TextInputType.text, String? errorText}) {
     return TextFormField(
       controller: controller,
+      keyboardType: keyboardType,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: labelText,
