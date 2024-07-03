@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.canna_club_rating">
     <application
-        android:label="canna_club_rating"
+        android:label="High Rating"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
