@@ -86,20 +86,19 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green[900], // AppBar in dunklem Grün
+        backgroundColor: Colors.green[900],
         title: Text(clubData['name'] ?? 'Club Details',
-            style: TextStyle(color: Colors.white)), // Titel in weiß
+            style: TextStyle(color: Colors.white)),
       ),
       body: Container(
-        color: Colors.green[900], // Hintergrundfarbe des gesamten Screens
+        color: Colors.green[900],
         child: isLoading
             ? const Center(
-                child: CircularProgressIndicator(
-                    color: Colors.white)) // Ladeindikator in weiß
+                child: CircularProgressIndicator(color: Colors.white))
             : clubId == null || clubData == null
                 ? const Center(
                     child: Text("Bisher wurde noch kein Club registriert.",
-                        style: TextStyle(color: Colors.white))) // Text in weiß
+                        style: TextStyle(color: Colors.white)))
                 : Column(
                     children: [
                       Expanded(
@@ -109,19 +108,16 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                           children: [
                             ListTile(
                               title: Text(clubData['name'] ?? 'N/A',
-                                  style: TextStyle(
-                                      color: Colors.white)), // Titel in weiß
+                                  style: TextStyle(color: Colors.white)),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                       '${clubData['street'] ?? 'N/A'} ${clubData['house_number'] ?? ''}',
-                                      style: TextStyle(
-                                          color: Colors.white70)), // Adresse
+                                      style: TextStyle(color: Colors.white70)),
                                   Text(
                                       '${clubData['zip_code'] ?? 'N/A'} ${clubData['city'] ?? ''}',
-                                      style: TextStyle(
-                                          color: Colors.white70)), // Ort
+                                      style: TextStyle(color: Colors.white70)),
                                   FutureBuilder<double>(
                                     future: widget.club['id'] != null
                                         ? getAverageRating(widget.club['id'])
@@ -131,8 +127,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                                           ConnectionState.waiting) {
                                         return const Text("Lade Bewertung...",
                                             style: TextStyle(
-                                                color: Colors
-                                                    .white70)); // Lade Bewertung in weiß
+                                                color: Colors.white70));
                                       }
                                       final averageRating =
                                           snapshot.data ?? 0.0;
@@ -140,8 +135,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                                         children: [
                                           Text(averageRating.toStringAsFixed(1),
                                               style: TextStyle(
-                                                  color: Colors
-                                                      .white70)), // Bewertung
+                                                  color: Colors.white70)),
                                           const SizedBox(width: 8),
                                           Row(
                                             children: List.generate(5, (index) {
@@ -188,8 +182,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                                                   ConnectionState.waiting) {
                                                 return const Text("...",
                                                     style: TextStyle(
-                                                        color: Colors
-                                                            .white70)); // Lade Bewertung in weiß
+                                                        color: Colors.white70));
                                               }
                                               final ratingCount =
                                                   snapshot.data ?? 0;
@@ -207,8 +200,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                                   Text('Beschreibung',
                                       style: TextStyle(
                                           color: Colors.white,
-                                          fontWeight: FontWeight
-                                              .bold)), // Beschreibung in weiß
+                                          fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 8),
                                   Text(clubDescription,
                                       style: TextStyle(color: Colors.white70)),
@@ -216,8 +208,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                                   Text('Kommentare',
                                       style: TextStyle(
                                           color: Colors.white,
-                                          fontWeight: FontWeight
-                                              .bold)), // Kommentare in weiß
+                                          fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 8),
                                   StreamBuilder<QuerySnapshot>(
                                     stream: clubId != null
@@ -228,8 +219,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                                           ConnectionState.waiting) {
                                         return const Text("Lade Kommentare...",
                                             style: TextStyle(
-                                                color: Colors
-                                                    .white70)); // Lade Kommentare in weiß
+                                                color: Colors.white70));
                                       }
                                       final commentsDocs =
                                           snapshot.data?.docs ?? [];
@@ -246,7 +236,6 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                                             CrossAxisAlignment.start,
                                         children:
                                             commentsDocs.map((commentDoc) {
-                                          // Abruf des Timestamps und Formatierung des Datums
                                           final timestamp =
                                               commentDoc['timestamp']
                                                   as Timestamp?;
@@ -331,13 +320,10 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                             Expanded(
                               child: TextField(
                                 controller: _commentController,
-                                style: TextStyle(
-                                    color: Colors.white), // Kommentar in weiß
+                                style: TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
                                   hintText: 'Neuen Kommentar hinzufügen',
-                                  hintStyle: TextStyle(
-                                      color: Colors
-                                          .white70), // Hinweistext in weiß
+                                  hintStyle: TextStyle(color: Colors.white70),
                                   border: OutlineInputBorder(
                                     borderSide: BorderSide(color: Colors.white),
                                   ),
@@ -345,8 +331,7 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.send,
-                                  color: Colors.white), // Sende-Icon in weiß
+                              icon: const Icon(Icons.send, color: Colors.white),
                               onPressed: addComment,
                             ),
                           ],

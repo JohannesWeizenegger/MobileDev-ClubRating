@@ -41,7 +41,6 @@ class OSMService {
         final displayName = data[0]['display_name'];
         final parts = displayName.split(',');
         if (parts.length >= 2) {
-          // Return format: "PLZ, Ort"
           return parts[0].trim() + ', ' + parts[1].trim();
         } else {
           return displayName;

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
@@ -40,11 +41,11 @@ class FirebaseService {
     }
 
     final String uniqueFileName =
-    DateTime.now().millisecondsSinceEpoch.toString();
+        DateTime.now().millisecondsSinceEpoch.toString();
     final Reference referenceRoot = FirebaseStorage.instance.ref();
     final Reference referenceDirImages = referenceRoot.child('images');
     final Reference referenceImageToUpload =
-    referenceDirImages.child(uniqueFileName);
+        referenceDirImages.child(uniqueFileName);
 
     await referenceImageToUpload.putFile(selectedImage);
     final String imageUrl = await referenceImageToUpload.getDownloadURL();
@@ -78,7 +79,7 @@ class FirebaseService {
     });
 
     DocumentReference ownerRef =
-    FirebaseFirestore.instance.collection('owner').doc(userId);
+        FirebaseFirestore.instance.collection('owner').doc(userId);
     await ownerRef.set({
       'name': ownerName,
       'street': ownerStreet,
@@ -88,6 +89,7 @@ class FirebaseService {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
+    String? token = await FirebaseMessaging.instance.getToken();
     await FirebaseFirestore.instance.collection('club').add({
       'name': clubName,
       'street': clubStreet,
@@ -98,6 +100,7 @@ class FirebaseService {
       'latitude': latitude,
       'longitude': longitude,
       'timestamp': FieldValue.serverTimestamp(),
+      'fcm_token': token,
     });
   }
 
@@ -170,8 +173,14 @@ class FirebaseService {
 
     final User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      await FirebaseFirestore.instance.collection('owner').doc(user.uid).delete();
-      await FirebaseFirestore.instance.collection('newClubRequests').doc(user.uid).delete();
+      await FirebaseFirestore.instance
+          .collection('owner')
+          .doc(user.uid)
+          .delete();
+      await FirebaseFirestore.instance
+          .collection('newClubRequests')
+          .doc(user.uid)
+          .delete();
     }
   }
 

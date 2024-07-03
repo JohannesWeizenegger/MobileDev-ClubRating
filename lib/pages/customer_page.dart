@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'osm_service.dart';
 import 'club_detail_page.dart';
-import 'home_page.dart'; // Importiere die HomePage
+import 'home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +36,6 @@ class _CustomerPageState extends State<CustomerPage> {
   late List<Map<String, dynamic>> clubs = [];
   bool isLoading = true;
 
-  // Suchfelder
   final TextEditingController _searchNameController = TextEditingController();
   String? _locationQuery;
   double? _maxDistance;
@@ -76,7 +75,6 @@ class _CustomerPageState extends State<CustomerPage> {
       });
     }
 
-    // Aktualisieren die Liste Club-Daten hier
     setState(() {});
     await fetchAllClubData();
     setState(() {});
@@ -246,7 +244,7 @@ class _CustomerPageState extends State<CustomerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green[900], // AppBar in dunklem Grün
+        backgroundColor: Colors.green[900],
         title: const Text("Canna-Clubs", style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
@@ -254,15 +252,14 @@ class _CustomerPageState extends State<CustomerPage> {
             onPressed: () async {
               await _auth.signOut();
               Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                    builder: (context) => HomePage()), // Hier die HomePage
+                MaterialPageRoute(builder: (context) => HomePage()),
               );
             },
           ),
         ],
       ),
       body: Container(
-        color: Colors.green[900], // Hintergrundfarbe des gesamten Bildschirms
+        color: Colors.green[900],
         child: SingleChildScrollView(
           child: Column(
             children: [
@@ -273,8 +270,7 @@ class _CustomerPageState extends State<CustomerPage> {
                     Expanded(
                       child: TextFormField(
                         controller: _searchNameController,
-                        style:
-                            TextStyle(color: Colors.white), // Textfarbe in weiß
+                        style: TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           labelText: "Clubname",
                           labelStyle: TextStyle(color: Colors.white),
@@ -301,7 +297,7 @@ class _CustomerPageState extends State<CustomerPage> {
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.green[900],
-                        backgroundColor: Colors.white, // Primärfarbe des Textes
+                        backgroundColor: Colors.white,
                       ),
                       onPressed: performSearch,
                       child: const Text("Finden"),
@@ -322,15 +318,14 @@ class _CustomerPageState extends State<CustomerPage> {
                 ),
               if (isLoading)
                 const Center(
-                    child: CircularProgressIndicator(
-                        color: Colors.white)) // Ladeindikator in weiß
+                    child: CircularProgressIndicator(color: Colors.white))
               else if (clubs.isEmpty)
                 const Center(
                   child: Text(
                     "Keine Clubs gefunden.",
                     style: TextStyle(
                       fontSize: 16.0,
-                      color: Colors.white, // Textfarbe in weiß
+                      color: Colors.white,
                     ),
                   ),
                 )
@@ -345,8 +340,7 @@ class _CustomerPageState extends State<CustomerPage> {
 
                     return ListTile(
                       title: Text(club['data']['name'] ?? 'N/A',
-                          style:
-                              TextStyle(color: Colors.white)), // Titel in weiß
+                          style: TextStyle(color: Colors.white)),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -493,7 +487,7 @@ class _LocationDialogState extends State<LocationDialog> {
           children: [
             TextFormField(
               controller: _locationController,
-              style: TextStyle(color: Colors.white), // Textfarbe in weiß
+              style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: "PLZ oder Ort",
                 labelStyle: TextStyle(color: Colors.white),
@@ -509,7 +503,7 @@ class _LocationDialogState extends State<LocationDialog> {
             ),
             const SizedBox(height: 16),
             Text("Entfernung: ${_radius.toInt()} km",
-                style: TextStyle(color: Colors.white)), // Textfarbe in weiß
+                style: TextStyle(color: Colors.white)),
             Slider(
               value: _radius,
               min: 1,

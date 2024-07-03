@@ -11,10 +11,10 @@ class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -23,14 +23,14 @@ class _HomePageState extends State<HomePage> {
     _auth.authStateChanges().listen((event) {
       if (event != null) {
         Provider.of<AppState>(context, listen: false).setUser(event);
-        _checkRegistrationStatus(event);
+        checkRegistrationStatus(event);
       } else {
         Provider.of<AppState>(context, listen: false).clearUser();
       }
     });
   }
 
-  Future<void> _checkRegistrationStatus(User user) async {
+  Future<void> checkRegistrationStatus(User user) async {
     final String userId = user.uid;
     final QuerySnapshot userClubDocs = await FirebaseFirestore.instance
         .collection('club')
@@ -39,8 +39,7 @@ class _HomePageState extends State<HomePage> {
 
     final appState = Provider.of<AppState>(context, listen: false);
     appState.setAlreadyRegistered(userClubDocs.docs.isNotEmpty);
-    appState.setIndex(
-        0); // Gehe zu CustomerPage nach Überprüfung des Registrierungsstatus
+    appState.setIndex(0);
   }
 
   @override
@@ -55,7 +54,6 @@ class _HomePageState extends State<HomePage> {
         const ClubPage(),
     ];
 
-    // Sicherstellen, dass currentIndex im gültigen Bereich liegt
     int currentIndex = appState.currentIndex;
     if (currentIndex < 0 || currentIndex >= pages.length) {
       currentIndex = 0;
@@ -64,7 +62,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       body: Container(
-        color: Colors.green[900], // Hintergrundfarbe des gesamten Bildschirms
+        color: Colors.green[900],
         child: Column(
           children: [
             Expanded(
@@ -112,7 +110,7 @@ class _HomePageState extends State<HomePage> {
       children: [
         Container(
           height: 1,
-          color: Colors.white, // Die weiße Trennlinie
+          color: Colors.white,
         ),
         BottomNavigationBar(
           backgroundColor: Colors.green[900],

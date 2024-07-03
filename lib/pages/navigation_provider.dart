@@ -46,10 +46,10 @@ class AppState extends ChangeNotifier {
   }
 
   void goToClubPage() {
-    setIndex(1);  // Navigiere zu ClubPage
+    setIndex(1);
   }
 
   void goToRegisteredClubPage() {
-    setIndex(1);  // Navigiere zu RegisteredClubPage
+    setIndex(1);
   }
 }

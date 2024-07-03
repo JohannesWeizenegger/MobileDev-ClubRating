@@ -39,14 +39,12 @@ class _ClubPageState extends State<ClubPage> {
         backgroundColor: Colors.green[900],
         title: const Text("Club Registrierung",
             style: TextStyle(color: Colors.white)),
-        iconTheme: IconThemeData(
-            color: Colors.white), // Setzt Icon-Farbe in der AppBar auf weiß
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Container(
-              color: Colors
-                  .green[900], // Hintergrundfarbe des gesamten Bildschirms
+              color: Colors.green[900],
               padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: _formKey,
@@ -305,7 +303,6 @@ class _ClubPageState extends State<ClubPage> {
         isLoading = false;
       });
 
-      // Zeige die Erfolgsmeldung an
       await showDialog<void>(
         context: context,
         builder: (BuildContext context) {
@@ -326,7 +323,6 @@ class _ClubPageState extends State<ClubPage> {
         },
       );
 
-      // Navigate to HomePage and set the index to 0 (Customer Page)
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => HomePage(),

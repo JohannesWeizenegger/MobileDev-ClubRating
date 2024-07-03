@@ -77,44 +77,41 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.green[900], // Hintergrund
-          title: const Text('Club löschen',
-              style: TextStyle(color: Colors.white)), // Weißer Text
+          backgroundColor: Colors.green[900],
+          title:
+              const Text('Club löschen', style: TextStyle(color: Colors.white)),
           content: const Text('Möchten Sie diesen Club wirklich löschen?',
-              style: TextStyle(color: Colors.white)), // Weißer Text
+              style: TextStyle(color: Colors.white)),
           actions: <Widget>[
             TextButton(
               child: const Text('Abbrechen',
-                  style: TextStyle(color: Colors.white)), // Weißer Text
+                  style: TextStyle(color: Colors.white)),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: const Text('Löschen',
-                  style: TextStyle(color: Colors.white)), // Weißer Text
+              child:
+                  const Text('Löschen', style: TextStyle(color: Colors.white)),
               onPressed: () async {
                 if (clubId != null) {
                   await FirebaseService.deleteClub(clubId!);
-                  Navigator.of(context).pop(); // Schließen des Dialogs
+                  Navigator.of(context).pop();
 
                   await showDialog<void>(
                     context: context,
                     builder: (BuildContext context) {
                       return AlertDialog(
-                        backgroundColor: Colors.green[900], // Hintergrund
+                        backgroundColor: Colors.green[900],
                         title: const Text('Erfolg',
-                            style:
-                                TextStyle(color: Colors.white)), // Weißer Text
+                            style: TextStyle(color: Colors.white)),
                         content: const Text(
                             'Ihr Club wurde erfolgreich gelöscht',
-                            style:
-                                TextStyle(color: Colors.white)), // Weißer Text
+                            style: TextStyle(color: Colors.white)),
                         actions: <Widget>[
                           TextButton(
                             child: const Text('OK',
-                                style: TextStyle(
-                                    color: Colors.white)), // Weißer Text
+                                style: TextStyle(color: Colors.white)),
                             onPressed: () async {
                               Navigator.of(context).pop();
                               final appState =
@@ -140,56 +137,47 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green[900], // AppBar in dunklem Grün
+        backgroundColor: Colors.green[900],
         title: const Text("Ihr registrierter Club",
-            style: TextStyle(color: Colors.white)), // Titel in weiß
+            style: TextStyle(color: Colors.white)),
       ),
       body: Container(
-        color: Colors.green[900], // Hintergrundfarbe des gesamten Bildschirms
+        color: Colors.green[900],
         child: isLoading
             ? const Center(
-                child: CircularProgressIndicator(
-                    color: Colors.white)) // Ladeindikator in weiß
+                child: CircularProgressIndicator(color: Colors.white))
             : clubData == null
                 ? const Center(
                     child: Text("Kein registrierter Club gefunden.",
-                        style: TextStyle(color: Colors.white))) // Text in weiß
+                        style: TextStyle(color: Colors.white)))
                 : ListView(
                     children: [
                       ListTile(
                         title: Text(clubData?['name'] ?? 'N/A',
-                            style: TextStyle(
-                                color: Colors.white)), // Titel in weiß
+                            style: TextStyle(color: Colors.white)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                                 '${clubData?['street'] ?? 'N/A'} ${clubData?['house_number'] ?? ''}',
-                                style: TextStyle(
-                                    color: Colors
-                                        .white70)), // Adresse in weiß schattiert
+                                style: TextStyle(color: Colors.white70)),
                             Text(
                                 '${clubData?['zip_code'] ?? 'N/A'} ${clubData?['city'] ?? ''}',
-                                style: TextStyle(
-                                    color: Colors
-                                        .white70)), // Ort in weiß schattiert
+                                style: TextStyle(color: Colors.white70)),
                             FutureBuilder<double>(
                               future: FirebaseService.getAverageRating(clubId!),
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
                                   return const Text("Lade Bewertung...",
-                                      style: TextStyle(
-                                          color: Colors
-                                              .white70)); // Lade Bewertung in weiß
+                                      style: TextStyle(color: Colors.white70));
                                 }
                                 final averageRating = snapshot.data ?? 0.0;
                                 return Row(
                                   children: [
                                     Text(averageRating.toStringAsFixed(1),
-                                        style: TextStyle(
-                                            color: Colors
-                                                .white70)), // Bewertung in weiß schattiert
+                                        style:
+                                            TextStyle(color: Colors.white70)),
                                     const SizedBox(width: 8),
                                     Row(
                                       children: List.generate(5, (index) {
@@ -233,29 +221,24 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                             ConnectionState.waiting) {
                                           return const Text("...",
                                               style: TextStyle(
-                                                  color: Colors
-                                                      .white70)); // Lade Bewertung in weiß
+                                                  color: Colors.white70));
                                         }
                                         final ratingCount = snapshot.data ?? 0;
                                         return Text(
                                             ' ($ratingCount Bewertungen)',
                                             style: TextStyle(
-                                                color: Colors
-                                                    .white70)); // Bewertungen in weiß schattiert
+                                                color: Colors.white70));
                                       },
                                     ),
                                   ],
                                 );
                               },
                             ),
-                            const SizedBox(
-                                height:
-                                    20), // Space between ratings and description
+                            const SizedBox(height: 20),
                             Text('Beschreibung',
                                 style: TextStyle(
                                     color: Colors.white,
-                                    fontWeight: FontWeight
-                                        .bold)), // Überschrift Beschreibung in weiß
+                                    fontWeight: FontWeight.bold)),
                             FutureBuilder<DocumentSnapshot>(
                               future: clubId != null
                                   ? FirebaseFirestore.instance
@@ -266,9 +249,7 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                               builder: (context, snapshot) {
                                 if (!snapshot.hasData) {
                                   return const Text("Lade Beschreibung...",
-                                      style: TextStyle(
-                                          color: Colors
-                                              .white70)); // Lade Beschreibung in weiß
+                                      style: TextStyle(color: Colors.white70));
                                 }
                                 var data = snapshot.data!.data()
                                     as Map<String, dynamic>;
@@ -281,27 +262,23 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                         Expanded(
                                           child: TextField(
                                             controller: _descriptionController,
-                                            style: TextStyle(
-                                                color: Colors
-                                                    .white), // Text in weiß
+                                            style:
+                                                TextStyle(color: Colors.white),
                                             decoration: InputDecoration(
                                               hintText:
                                                   'Neue Beschreibung hinzufügen',
                                               hintStyle: TextStyle(
-                                                  color: Colors
-                                                      .white70), // Hinweistext in weiß schattiert
+                                                  color: Colors.white70),
                                               border: OutlineInputBorder(
                                                 borderSide: BorderSide(
-                                                    color: Colors
-                                                        .white), // Umrandung in weiß
+                                                    color: Colors.white),
                                               ),
                                             ),
                                           ),
                                         ),
                                         IconButton(
                                           icon: const Icon(Icons.send,
-                                              color: Colors
-                                                  .white), // Sende-Icon in weiß
+                                              color: Colors.white),
                                           onPressed: () {
                                             FirebaseService.updateDescription(
                                                 _descriptionController.text,
@@ -327,12 +304,10 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                       Expanded(
                                           child: Text(description,
                                               style: TextStyle(
-                                                  color: Colors
-                                                      .white70))), // Beschreibungstext in weiß schattiert
+                                                  color: Colors.white70))),
                                       IconButton(
                                         icon: const Icon(Icons.edit,
-                                            color: Colors
-                                                .white), // Bearbeitungs-Icon in weiß
+                                            color: Colors.white),
                                         onPressed: () {
                                           _descriptionController.text =
                                               description;
@@ -340,27 +315,24 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                             context: context,
                                             builder: (BuildContext context) {
                                               return AlertDialog(
-                                                backgroundColor: Colors
-                                                    .green[900], // Hintergrund
+                                                backgroundColor:
+                                                    Colors.green[900],
                                                 title: const Text(
                                                     'Beschreibung bearbeiten',
                                                     style: TextStyle(
-                                                        color: Colors
-                                                            .white)), // Weißer Text
+                                                        color: Colors.white)),
                                                 content: TextField(
                                                   controller:
                                                       _editDescriptionController,
                                                   maxLines: null,
                                                   style: TextStyle(
-                                                      color: Colors
-                                                          .white), // Text in weiß
+                                                      color: Colors.white),
                                                   decoration:
                                                       const InputDecoration(
                                                     hintText:
                                                         'Beschreibung bearbeiten',
                                                     hintStyle: TextStyle(
-                                                        color: Colors
-                                                            .white70), // Hinweistext in weiß
+                                                        color: Colors.white70),
                                                   ),
                                                 ),
                                                 actions: <Widget>[
@@ -368,8 +340,8 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                                     child: const Text(
                                                         'Abbrechen',
                                                         style: TextStyle(
-                                                            color: Colors
-                                                                .white)), // Weißer Text
+                                                            color:
+                                                                Colors.white)),
                                                     onPressed: () {
                                                       Navigator.of(context)
                                                           .pop();
@@ -379,8 +351,8 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                                     child: const Text(
                                                         'Speichern',
                                                         style: TextStyle(
-                                                            color: Colors
-                                                                .white)), // Weißer Text
+                                                            color:
+                                                                Colors.white)),
                                                     onPressed: () async {
                                                       await FirebaseService
                                                           .updateDescription(
@@ -405,11 +377,9 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                       ),
                                       IconButton(
                                         icon: const Icon(Icons.delete,
-                                            color: Colors
-                                                .white), // Lösch-Icon in weiß
+                                            color: Colors.white),
                                         onPressed: () {
-                                          deleteDescription(
-                                              clubId!); // Verwende die neue Methode
+                                          deleteDescription(clubId!);
                                         },
                                       ),
                                     ],
@@ -417,17 +387,12 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                 );
                               },
                             ),
-                            const SizedBox(
-                                height:
-                                    20), // Space between description and comments section
+                            const SizedBox(height: 20),
                             Text('Kommentare',
                                 style: TextStyle(
                                     color: Colors.white,
-                                    fontWeight: FontWeight
-                                        .bold)), // Überschrift Kommentare in weiß
-                            const SizedBox(
-                                height:
-                                    20), // Space between header and comments
+                                    fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 20),
                             StreamBuilder<QuerySnapshot>(
                               stream: clubId != null
                                   ? FirebaseService.getComments(clubId!)
@@ -436,9 +401,7 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
                                   return const Text("Lade Kommentare...",
-                                      style: TextStyle(
-                                          color: Colors
-                                              .white70)); // Lade Kommentare in weiß
+                                      style: TextStyle(color: Colors.white70));
                                 }
                                 final commentsDocs = snapshot.data?.docs ?? [];
                                 if (commentsDocs.isEmpty) {
@@ -528,8 +491,7 @@ class _RegisteredClubPageState extends State<RegisteredClubPage> {
                             backgroundColor: Colors.red,
                           ),
                           child: const Text('Club löschen',
-                              style: TextStyle(
-                                  color: Colors.white)), // Weißer Text
+                              style: TextStyle(color: Colors.white)),
                         ),
                       ),
                     ],

@@ -11,39 +11,32 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => AppState(),
       child: MaterialApp(
         theme: ThemeData(
-          primaryColor: Colors.green[900], // Dunkles Grün als Primärfarbe
-          scaffoldBackgroundColor:
-              Colors.green[900], // Hintergrundfarbe des Screens
+          primaryColor: Colors.green[900],
+          scaffoldBackgroundColor: Colors.green[900],
           textTheme: const TextTheme(
-            bodyLarge: TextStyle(color: Colors.white), // Widgets Text in weiß
-            bodyMedium: TextStyle(color: Colors.white), // Widgets Text in weiß
-            displayLarge:
-                TextStyle(color: Colors.white), // Widgets Text in weiß
-            displayMedium:
-                TextStyle(color: Colors.white), // Widgets Text in weiß
-            displaySmall:
-                TextStyle(color: Colors.white), // Widgets Text in weiß
-            headlineMedium:
-                TextStyle(color: Colors.white), // Widgets Text in weiß
-            headlineSmall:
-                TextStyle(color: Colors.white), // Widgets Text in weiß
-            titleLarge: TextStyle(color: Colors.white), // Widgets Text in weiß
-            titleMedium: TextStyle(color: Colors.white), // Widgets Text in weiß
-            titleSmall: TextStyle(color: Colors.white), // Widgets Text in weiß
-            labelLarge: TextStyle(color: Colors.white), // Widgets Text in weiß
-            bodySmall: TextStyle(
-                color: Colors.white70), // Widgets Text in weiß schattiert
-            labelSmall: TextStyle(color: Colors.white), // Widgets Text in weiß
+            bodyLarge: TextStyle(color: Colors.white),
+            bodyMedium: TextStyle(color: Colors.white),
+            displayLarge: TextStyle(color: Colors.white),
+            displayMedium: TextStyle(color: Colors.white),
+            displaySmall: TextStyle(color: Colors.white),
+            headlineMedium: TextStyle(color: Colors.white),
+            headlineSmall: TextStyle(color: Colors.white),
+            titleLarge: TextStyle(color: Colors.white),
+            titleMedium: TextStyle(color: Colors.white),
+            titleSmall: TextStyle(color: Colors.white),
+            labelLarge: TextStyle(color: Colors.white),
+            bodySmall: TextStyle(color: Colors.white70),
+            labelSmall: TextStyle(color: Colors.white),
           ),
           inputDecorationTheme: InputDecorationTheme(
-            labelStyle:
-                TextStyle(color: Colors.white), // Eingabefeld Label in weiß
+            labelStyle: TextStyle(color: Colors.white),
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.white),
               borderRadius: BorderRadius.circular(10.0),
@@ -54,7 +47,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
           iconTheme: IconThemeData(
-            color: Colors.white, // Icons in weiß
+            color: Colors.white,
           ),
           appBarTheme: AppBarTheme(
             backgroundColor: Colors.green[900],
@@ -62,13 +55,13 @@ class MyApp extends StatelessWidget {
             iconTheme: IconThemeData(color: Colors.white),
           ),
           buttonTheme: ButtonThemeData(
-            buttonColor: Colors.white, // Hintergrundfarbe der Buttons
+            buttonColor: Colors.white,
             textTheme: ButtonTextTheme.primary,
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.green[900],
-              backgroundColor: Colors.white, // Textfarbe
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.0),
               ),
