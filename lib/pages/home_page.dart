@@ -2,6 +2,8 @@ import 'package:canna_club_rating/pages/registered_club_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_signin_button/button_list.dart';
+import 'package:flutter_signin_button/button_view.dart';
 import 'customer_page.dart';
 import 'club_page.dart';
 import 'package:provider/provider.dart';
@@ -70,7 +72,7 @@ class HomePageState extends State<HomePage> {
                   ? _buildMainContent(appState, pages)
                   : _googleSignInButton(),
             ),
-            _buildBottomNavigationBar(appState),
+            if (appState.user != null) _buildBottomNavigationBar(appState),
           ],
         ),
       ),
@@ -79,20 +81,32 @@ class HomePageState extends State<HomePage> {
 
   Widget _googleSignInButton() {
     return Center(
-      child: SizedBox(
-        height: 50,
-        child: ElevatedButton.icon(
-          onPressed: _handleGoogleSignIn,
-          icon: const Icon(Icons.login, color: Colors.green),
-          label: const Text('Mit Google anmelden',
-              style: TextStyle(color: Colors.green)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'High Rating',
+            style: TextStyle(
+              fontSize: 57,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
-        ),
+          SizedBox(height: 110),
+          Image.asset('assets/images/image.png'),
+          SizedBox(height: 60),
+          SizedBox(
+            height: 50,
+            child: SignInButton(
+              Buttons.Google,
+              text: 'Mit Google anmelden',
+              onPressed: () {
+                _handleGoogleSignIn();
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

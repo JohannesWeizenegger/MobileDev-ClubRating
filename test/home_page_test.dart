@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:canna_club_rating/pages/navigation_provider.dart';
+import 'package:flutter_signin_button/button_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
@@ -22,66 +23,56 @@ void main() {
   group('HomePage Tests', () {
     late MockFirebaseAuth mockFirebaseAuth;
     late MockAppState mockAppState;
-    late MockFirebaseFirestore mockFirestore;
     late MockUser mockUser;
 
     setUp(() {
       mockFirebaseAuth = MockFirebaseAuth();
       mockAppState = MockAppState();
-      mockFirestore = MockFirebaseFirestore();
       mockUser = MockUser();
     });
 
-    testWidgets('Google SignIn Button is displayed',
-        (WidgetTester tester) async {
-      await tester.pumpAndSettle();
-      await tester.idle();
-      if (Platform.isAndroid) {
-        when(mockAppState.user).thenReturn(null);
+    group('HomePage Widget Tests', () {
+      testWidgets('Displays Google Sign-in Button if not signed in',
+          (WidgetTester tester) async {
+        await tester.pumpAndSettle();
+        await tester.idle();
 
-        await tester.pumpWidget(
-          ChangeNotifierProvider<AppState>.value(
-            value: mockAppState,
-            child: MaterialApp(home: HomePage()),
-          ),
-        );
-        expect(find.byType(ElevatedButton), findsOneWidget);
-        expect(find.text('Mit Google anmelden'), findsOneWidget);
-      }
-    });
+        if (Platform.isAndroid) {
+          when(mockFirebaseAuth.authStateChanges())
+              .thenAnswer((_) => Stream.value(null));
 
-    testWidgets('HomePage builds correctly', (WidgetTester tester) async {
-      if (Platform.isAndroid) {
-        await tester.pumpWidget(
-          ChangeNotifierProvider<AppState>.value(
-            value: mockAppState,
-            child: MaterialApp(home: HomePage()),
-          ),
-        );
+          expect(find.text('High Rating'), findsOneWidget);
+          expect(find.byType(SignInButton), findsOneWidget);
+        }
+      });
 
-        expect(find.byType(HomePage), findsOneWidget);
-        expect(find.byType(CustomerPage), findsOneWidget);
-        expect(find.byType(BottomNavigationBar), findsOneWidget);
-      }
-    });
+      testWidgets('HomePage builds correctly', (WidgetTester tester) async {
+        if (Platform.isAndroid) {
+          await tester.pumpWidget(
+            ChangeNotifierProvider<AppState>.value(
+              value: mockAppState,
+              child: MaterialApp(home: HomePage()),
+            ),
+          );
 
-    test('BottomNavigationBar items are set correctly', () {
-      if (Platform.isAndroid) {
-        final List<BottomNavigationBarItem> items = [
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.search, color: Colors.white),
-            label: 'Clubs finden',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.add, color: Colors.white),
-            label: 'Club registrieren',
-          ),
-        ];
+          expect(find.byType(HomePage), findsOneWidget);
+          expect(find.byType(CustomerPage), findsOneWidget);
+          expect(find.byType(BottomNavigationBar), findsOneWidget);
+        }
+      });
 
-        expect(items.length, 2);
-        expect(items[0].label, 'Clubs finden');
-        expect(items[1].label, 'Club registrieren');
-      }
+      testWidgets('Displays CustomerPage if registered',
+          (WidgetTester tester) async {
+        if (Platform.isAndroid) {
+          when(mockFirebaseAuth.authStateChanges())
+              .thenAnswer((_) => Stream.value(mockUser));
+          when(mockUser.uid).thenReturn('anotherTestUserID');
+
+          await tester.pump();
+
+          expect(find.byType(CustomerPage), findsOneWidget);
+        }
+      });
     });
   });
 }
