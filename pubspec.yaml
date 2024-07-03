@@ -1,63 +1,62 @@
-  name: canna_club_rating
-  description: "A new Flutter project."
-  publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+    name: canna_club_rating
+    description: "A new Flutter project."
+    publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-  version: 1.0.0+1
+    version: 1.0.0+1
 
-  environment:
-    sdk: '>=3.4.1 <4.0.0'
+    environment:
+        sdk: '>=3.4.1 <4.0.0'
 
-  dependencies:
+    dependencies:
+        flutter:
+            sdk: flutter
+
+        cupertino_icons: ^1.0.6
+
+        #Firebase dependencies
+        firebase_core: ^3.0.0
+        firebase_messaging: ^15.0.2
+        firebase_analytics: ^11.0.0
+        firebase_auth: ^5.0.0
+        sign_in_button: ^3.2.0
+        cloud_firestore: ^5.0.1
+        firebase_storage: ^12.0.1
+        intl: any
+
+        image_picker: ^1.1.2
+        provider: ^6.1.2
+        flutter_native_splash: ^2.4.0
+
+    dev_dependencies:
+        flutter_test:
+            sdk: flutter
+        mockito: ^5.0.15
+        google_sign_in_mocks: 0.3.0
+        firebase_auth_mocks: ^0.14.0
+        flutter_launcher_icons: ^0.13.1
+
+    dependency_overrides:
+        vm_service: 14.2.1
+
     flutter:
-      sdk: flutter
+        uses-material-design: true
 
-    cupertino_icons: ^1.0.6
+        assets:
+            - assets/images/
 
-    #Firebase dependencies
-    firebase_core: ^3.0.0
-    firebase_analytics: ^11.0.0
-    firebase_auth: ^5.0.0
-    sign_in_button: ^3.2.0
-    cloud_firestore: ^5.0.1
-    firebase_storage: ^12.0.1
-    intl: any
+    flutter_icons:
+        android: true
+        ios: true
+        image_path: "assets/images/picture.png"
 
-    image_picker: ^1.1.2
-    provider: ^6.1.2
-    flutter_native_splash: ^2.4.0
+    flutter_native_splash:
+        android: true
+        ios: true
+        color: "#000000"
+        image: assets/images/picture.png
 
-
-  dev_dependencies:
-    flutter_test:
-      sdk: flutter
-
-    flutter_lints: ^3.0.0
-
-  dependency_overrides:
-    vm_service: 14.2.1
-
-
-  flutter:
-    uses-material-design: true
-
-    assets:
-        - assets/images/
-
-
-  flutter_icons:
-    android: true
-    ios: true
-    image_path: "assets/images/app_icon.png"
-
-
-  flutter_native_splash:
-    android: true
-    ios: true
-    color: "#000000"
-    image: assets/images/splash.png
-
-    android_12:
-      image: assets/images/splash.png
-      color: "#000000"
-      icon_background_color: "#ffffff"
-      icon_background_color_dark: "#121212"
+        android_12:
+            image: assets/images/picture.png
+            color: "#000000"
+            icon_background_color: "#ffffff"
+            icon_background_color_dark: "#121212"
