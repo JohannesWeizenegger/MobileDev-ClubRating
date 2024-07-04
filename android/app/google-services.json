@@ -1,37 +1,53 @@
 {
   "project_info": {
-    "project_number": "734874580425",
-    "project_id": "cannaclubrating",
-    "storage_bucket": "cannaclubrating.appspot.com"
+    "project_number": "1045650886415",
+    "project_id": "highrating-6ef9a",
+    "storage_bucket": "highrating-6ef9a.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:734874580425:android:caf3420360fde62ecb2418",
+        "mobilesdk_app_id": "1:1045650886415:android:e3ac5c82d1ad5253a4787a",
         "android_client_info": {
           "package_name": "com.hm.canna_club_rating"
         }
       },
       "oauth_client": [
         {
-          "client_id": "734874580425-gagj7c3mh773mkl76uii5gm9k0imivh8.apps.googleusercontent.com",
+          "client_id": "1045650886415-h683p206cchj6jgj2nv4po3f02fvphvc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hm.canna_club_rating",
+            "certificate_hash": "41919b8b16421280e20639253a410e7f440d50c8"
+          }
+        },
+        {
+          "client_id": "1045650886415-ukf936aojg9l7c76kk7k07445nmp2rjk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hm.canna_club_rating",
+            "certificate_hash": "b2f9330cbd0c8bdb2c962a96687351775444afb2"
+          }
+        },
+        {
+          "client_id": "1045650886415-1tnd40guol7u1mll6cl0e514g5jnk688.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAnLS4q7ij271sBTWKQUNkJORT1nRPsRPw"
+          "current_key": "AIzaSyB26w6oVazFtHHybqBIrRN9oNnVdXC6M4E"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "734874580425-gagj7c3mh773mkl76uii5gm9k0imivh8.apps.googleusercontent.com",
+              "client_id": "1045650886415-1tnd40guol7u1mll6cl0e514g5jnk688.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "734874580425-5g52ohl2g6krgus7olma1riafu75c6kl.apps.googleusercontent.com",
+              "client_id": "1045650886415-gk4omqcagof8m451nppb3045ulppfpc3.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.hm.cannaClubRating"

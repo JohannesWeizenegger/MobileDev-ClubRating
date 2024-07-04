@@ -38,21 +38,20 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAnLS4q7ij271sBTWKQUNkJORT1nRPsRPw',
-    appId: '1:734874580425:android:caf3420360fde62ecb2418',
-    messagingSenderId: '734874580425',
-    projectId: 'cannaclubrating',
-    storageBucket: 'cannaclubrating.appspot.com',
+    apiKey: 'AIzaSyB26w6oVazFtHHybqBIrRN9oNnVdXC6M4E',
+    appId: '1:1045650886415:android:e3ac5c82d1ad5253a4787a',
+    messagingSenderId: '1045650886415',
+    projectId: 'highrating-6ef9a',
+    storageBucket: 'highrating-6ef9a.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCtNyQkcLJlwZetCF1VOorANac2m0lfZKs',
-    appId: '1:734874580425:ios:bd63b26e3a23431dcb2418',
-    messagingSenderId: '734874580425',
-    projectId: 'cannaclubrating',
-    storageBucket: 'cannaclubrating.appspot.com',
-    iosClientId:
-        '734874580425-5g52ohl2g6krgus7olma1riafu75c6kl.apps.googleusercontent.com',
+    apiKey: 'AIzaSyBDARYyVcKfFGhGO6gbNAmcKAIdSCSEZ5g',
+    appId: '1:1045650886415:ios:7fd11e123c6d8ad6a4787a',
+    messagingSenderId: '1045650886415',
+    projectId: 'highrating-6ef9a',
+    storageBucket: 'highrating-6ef9a.appspot.com',
     iosBundleId: 'com.hm.cannaClubRating',
   );
+
 }
