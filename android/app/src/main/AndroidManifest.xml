@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.canna_club_rating">
+    package="com.hm.canna_club_rating">
     <application
         android:label="High Rating"
         android:name="${applicationName}"

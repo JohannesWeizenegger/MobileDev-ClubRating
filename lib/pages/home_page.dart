@@ -168,7 +168,8 @@ class HomePageState extends State<HomePage> {
       GoogleAuthProvider googleAuthProvider = GoogleAuthProvider();
       await _auth.signInWithProvider(googleAuthProvider);
     } catch (error) {
-      print(error);
+      print("Test");
+      print(error.toString());
     }
   }
 }

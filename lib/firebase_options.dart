@@ -53,6 +53,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'cannaclubrating.appspot.com',
     iosClientId:
         '734874580425-5g52ohl2g6krgus7olma1riafu75c6kl.apps.googleusercontent.com',
-    iosBundleId: 'com.example.cannaClubRating',
+    iosBundleId: 'com.hm.cannaClubRating',
   );
 }

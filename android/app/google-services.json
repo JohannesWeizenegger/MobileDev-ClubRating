@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:734874580425:android:caf3420360fde62ecb2418",
         "android_client_info": {
-          "package_name": "com.example.canna_club_rating"
+          "package_name": "com.hm.canna_club_rating"
         }
       },
       "oauth_client": [
@@ -34,7 +34,7 @@
               "client_id": "734874580425-5g52ohl2g6krgus7olma1riafu75c6kl.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.cannaClubRating"
+                "bundle_id": "com.hm.cannaClubRating"
               }
             }
           ]
